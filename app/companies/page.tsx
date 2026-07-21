@@ -1,6 +1,6 @@
 import AppShell from "@/components/layout/AppShell";
 import PageHeader from "@/components/ui/PageHeader";
-import CompaniesClient from "@/components/CompaniesClient";
+import CompaniesClient from "@/components/company/CompaniesClient";
 
 export default function CompaniesPage() {
   return (
