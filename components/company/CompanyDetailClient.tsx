@@ -8,6 +8,9 @@ import type { Company } from "@/lib/types/company";
 import StatusBadge from "@/components/ui/StatusBadge";
 import ContactList from "@/components/contact/ContactList";
 import OpportunityList from "@/components/sales/OpportunityList";
+import ActivityTimeline from "@/components/activity/ActivityTimeline";
+import TaskList from "@/components/tasks/TaskList";
+import DocumentList from "@/components/documents/DocumentList";
 
 type Tab =
   | "overview"
@@ -56,6 +59,7 @@ export default function CompanyDetailClient({ id }: { id: string }) {
   const [company, setCompany] = useState<Company | null>(null);
   const [contactCount, setContactCount] = useState(0);
   const [opportunityCount, setOpportunityCount] = useState(0);
+  const [openTaskCount, setOpenTaskCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
@@ -68,12 +72,33 @@ export default function CompanyDetailClient({ id }: { id: string }) {
       setLoading(true);
       setError("");
 
-      const [companyResult, contactsResult] = await Promise.all([
-        supabase.from("companies").select("*").eq("id", id).single(),
+      const [
+        companyResult,
+        contactsResult,
+        opportunitiesResult,
+        tasksResult,
+      ] = await Promise.all([
+        supabase
+          .from("companies")
+          .select("*")
+          .eq("id", id)
+          .single(),
+
         supabase
           .from("contacts")
           .select("id", { count: "exact", head: true })
           .eq("company_id", id),
+
+        supabase
+          .from("leads")
+          .select("id", { count: "exact", head: true })
+          .eq("company_id", id),
+
+        supabase
+          .from("tasks")
+          .select("id", { count: "exact", head: true })
+          .eq("company_id", id)
+          .neq("status", "Completed"),
       ]);
 
       if (!active) return;
@@ -84,12 +109,14 @@ export default function CompanyDetailClient({ id }: { id: string }) {
       } else {
         setCompany(companyResult.data as Company);
         setContactCount(contactsResult.count || 0);
+        setOpportunityCount(opportunitiesResult.count || 0);
+        setOpenTaskCount(tasksResult.count || 0);
       }
 
       setLoading(false);
     }
 
-    load();
+    void load();
 
     return () => {
       active = false;
@@ -108,13 +135,13 @@ export default function CompanyDetailClient({ id }: { id: string }) {
     setDeleting(true);
     setError("");
 
-    const { error } = await supabase
+    const { error: deleteError } = await supabase
       .from("companies")
       .delete()
       .eq("id", id);
 
-    if (error) {
-      setError(error.message);
+    if (deleteError) {
+      setError(deleteError.message);
       setDeleting(false);
       return;
     }
@@ -149,7 +176,6 @@ export default function CompanyDetailClient({ id }: { id: string }) {
 
   return (
     <div className="space-y-6">
-    
       <Link
         href="/companies"
         className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900"
@@ -224,12 +250,21 @@ export default function CompanyDetailClient({ id }: { id: string }) {
               label="Annual value"
               value={formatMoney(company.annual_value)}
             />
-            <SidebarMetric label="People" value={String(contactCount)} />
-            <SidebarMetric label="Open tasks" value="0" />
+
             <SidebarMetric
-  label="Opportunities"
-  value={String(opportunityCount)}
-/>
+              label="People"
+              value={String(contactCount)}
+            />
+
+            <SidebarMetric
+              label="Open tasks"
+              value={String(openTaskCount)}
+            />
+
+            <SidebarMetric
+              label="Opportunities"
+              value={String(opportunityCount)}
+            />
           </div>
 
           <div className="mt-6 grid gap-2">
@@ -290,22 +325,27 @@ export default function CompanyDetailClient({ id }: { id: string }) {
                     label="Status"
                     value={company.status || "Not recorded"}
                   />
+
                   <Field
                     label="Annual value"
                     value={formatMoney(company.annual_value)}
                   />
+
                   <Field
                     label="Industry"
                     value={company.industry || "Not recorded"}
                   />
+
                   <Field
                     label="Division"
                     value={company.division || "Not recorded"}
                   />
+
                   <Field
                     label="Created"
                     value={formatDate(company.created_at)}
                   />
+
                   <Field
                     label="Last updated"
                     value={formatDate(company.updated_at)}
@@ -338,30 +378,25 @@ export default function CompanyDetailClient({ id }: { id: string }) {
           {activeTab === "sales" ? (
             <OpportunityList
               companyId={company.id}
-                onCountChange={setOpportunityCount}
+              onCountChange={setOpportunityCount}
             />
           ) : null}
 
           {activeTab === "tasks" ? (
-            <EmptyState
-              title="No tasks yet"
-              text="Tasks linked to this company will appear here."
-              actionLabel="+ Add task"
+            <TaskList
+              companyId={company.id}
+              onOpenCountChange={setOpenTaskCount}
             />
           ) : null}
 
           {activeTab === "activity" ? (
-            <EmptyState
-              title="No activity yet"
-              text="Calls, emails, notes and record changes will appear here."
-            />
+            <ActivityTimeline companyId={String(company.id)} />
           ) : null}
 
           {activeTab === "documents" ? (
-            <EmptyState
-              title="No documents yet"
-              text="Quotes, contracts and other company documents will appear here."
-              actionLabel="+ Add document"
+            <DocumentList
+              companyId={String(company.id)}
+              actorName="Lucas"
             />
           ) : null}
         </main>
@@ -382,7 +417,10 @@ function SidebarDetail({
       <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
         {label}
       </p>
-      <div className="mt-1 text-sm font-semibold text-slate-700">{value}</div>
+
+      <div className="mt-1 text-sm font-semibold text-slate-700">
+        {value}
+      </div>
     </div>
   );
 }
@@ -396,7 +434,10 @@ function SidebarMetric({
 }) {
   return (
     <div className="rounded-xl bg-slate-50 p-3">
-      <p className="text-xs font-semibold text-slate-500">{label}</p>
+      <p className="text-xs font-semibold text-slate-500">
+        {label}
+      </p>
+
       <p className="mt-1 truncate text-base font-black text-slate-900">
         {value}
       </p>
@@ -413,8 +454,13 @@ function SectionTitle({
 }) {
   return (
     <div>
-      <h2 className="text-lg font-bold text-slate-900">{title}</h2>
-      <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+      <h2 className="text-lg font-bold text-slate-900">
+        {title}
+      </h2>
+
+      <p className="mt-1 text-sm text-slate-500">
+        {subtitle}
+      </p>
     </div>
   );
 }
@@ -431,41 +477,11 @@ function Field({
       <dt className="text-xs font-bold uppercase tracking-wide text-slate-400">
         {label}
       </dt>
-      <dd className="mt-1 text-sm font-medium text-slate-800">{value}</dd>
+
+      <dd className="mt-1 text-sm font-medium text-slate-800">
+        {value}
+      </dd>
     </div>
-  );
-}
-
-function EmptyState({
-  title,
-  text,
-  actionLabel,
-}: {
-  title: string;
-  text: string;
-  actionLabel?: string;
-}) {
-  return (
-    <section className="rounded-2xl border border-[var(--border)] bg-white p-10 text-center shadow-sm">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-xl">
-        ◇
-      </div>
-      <h2 className="mt-4 text-lg font-bold text-slate-900">{title}</h2>
-      <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">
-        {text}
-      </p>
-
-      {actionLabel ? (
-        <button
-          type="button"
-          disabled
-          className="mt-5 rounded-xl bg-slate-200 px-4 py-2.5 text-sm font-bold text-slate-500"
-          title="This module will be added in a later sprint."
-        >
-          {actionLabel}
-        </button>
-      ) : null}
-    </section>
   );
 }
 
@@ -486,11 +502,19 @@ function Panel({
           : "border-[var(--border)] bg-white"
       }`}
     >
-      <p className={`font-bold ${error ? "text-red-700" : "text-slate-900"}`}>
+      <p
+        className={`font-bold ${
+          error ? "text-red-700" : "text-slate-900"
+        }`}
+      >
         {title}
       </p>
 
-      <p className={`mt-2 text-sm ${error ? "text-red-600" : "text-slate-500"}`}>
+      <p
+        className={`mt-2 text-sm ${
+          error ? "text-red-600" : "text-slate-500"
+        }`}
+      >
         {text}
       </p>
 

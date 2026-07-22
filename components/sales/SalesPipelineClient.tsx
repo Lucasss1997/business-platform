@@ -1,8 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  type DragEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { supabase } from "@/lib/supabase";
+import { logActivity } from "@/lib/activity";
 import OpportunityModal, {
   opportunityStages,
   type Opportunity,
@@ -18,6 +25,16 @@ import StageBadge from "@/components/sales/StageBadge";
 type CompanyRecord = {
   id: string;
   company_name: string;
+};
+
+const stageProbabilities: Record<OpportunityStage, number> = {
+  Prospect: 10,
+  Qualified: 25,
+  Discovery: 40,
+  "Proposal Sent": 60,
+  Negotiation: 80,
+  Won: 100,
+  Lost: 0,
 };
 
 function formatMoney(value: number | null | undefined) {
@@ -70,6 +87,15 @@ export default function SalesPipelineClient() {
 
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const [draggedOpportunityId, setDraggedOpportunityId] = useState<
+    string | null
+  >(null);
+
+  const [dragOverStage, setDragOverStage] =
+    useState<OpportunityStage | null>(null);
+
+  const [movingId, setMovingId] = useState<string | null>(null);
 
   const loadSalesData = useCallback(async () => {
     setLoading(true);
@@ -241,6 +267,8 @@ export default function SalesPipelineClient() {
   }
 
   function openEditModal(opportunity: Opportunity) {
+    if (movingId) return;
+
     setSelectedOpportunity(opportunity);
     setSelectedCompanyId(String(opportunity.company_id));
     setModalError("");
@@ -265,6 +293,8 @@ export default function SalesPipelineClient() {
     setSaving(true);
     setModalError("");
 
+    const activityTime = new Date().toISOString();
+
     const payload = {
       company_id: selectedCompanyId,
       title: values.title,
@@ -276,20 +306,86 @@ export default function SalesPipelineClient() {
       expected_close: values.expected_close || null,
       assigned_to: values.assigned_to || null,
       notes: values.notes || null,
-      last_activity: new Date().toISOString(),
+      last_activity: activityTime,
     };
 
-    const result = selectedOpportunity
-      ? await supabase
-          .from("leads")
-          .update(payload)
-          .eq("id", selectedOpportunity.id)
-      : await supabase.from("leads").insert(payload);
+    if (selectedOpportunity) {
+      const previousOpportunity = selectedOpportunity;
 
-    if (result.error) {
-      setModalError(result.error.message);
-      setSaving(false);
-      return;
+      const { error } = await supabase
+        .from("leads")
+        .update(payload)
+        .eq("id", selectedOpportunity.id);
+
+      if (error) {
+        setModalError(error.message);
+        setSaving(false);
+        return;
+      }
+
+      await logActivity({
+        companyId: selectedCompanyId,
+        entityType: "opportunity",
+        entityId: selectedOpportunity.id,
+        action: "updated",
+        description: `Updated opportunity "${values.title}".`,
+        metadata: {
+          opportunity_title: values.title,
+          old_stage: normaliseStage(previousOpportunity.stage),
+          new_stage: values.stage,
+          old_value: Number(previousOpportunity.value || 0),
+          new_value: values.value ? Number(values.value) : 0,
+          old_probability: Number(
+            previousOpportunity.probability || 0,
+          ),
+          new_probability: Number(values.probability),
+        },
+      });
+    } else {
+      const { data, error } = await supabase
+        .from("leads")
+        .insert(payload)
+        .select(
+          `
+            id,
+            company_id,
+            title,
+            source,
+            status,
+            stage,
+            value,
+            probability,
+            expected_close,
+            assigned_to,
+            notes,
+            last_activity,
+            created_at,
+            updated_at
+          `,
+        )
+        .single();
+
+      if (error) {
+        setModalError(error.message);
+        setSaving(false);
+        return;
+      }
+
+      const createdOpportunity = data as Opportunity;
+
+      await logActivity({
+        companyId: selectedCompanyId,
+        entityType: "opportunity",
+        entityId: createdOpportunity.id,
+        action: "created",
+        description: `Created opportunity "${values.title}".`,
+        metadata: {
+          opportunity_title: values.title,
+          stage: values.stage,
+          value: values.value ? Number(values.value) : 0,
+          probability: Number(values.probability),
+        },
+      });
     }
 
     setSaving(false);
@@ -301,10 +397,11 @@ export default function SalesPipelineClient() {
   }
 
   async function deleteOpportunity(opportunity: Opportunity) {
+    const opportunityTitle =
+      opportunity.title || "Untitled opportunity";
+
     const confirmed = window.confirm(
-      `Delete "${
-        opportunity.title || "this opportunity"
-      }"? This cannot be undone.`,
+      `Delete "${opportunityTitle}"? This cannot be undone.`,
     );
 
     if (!confirmed) return;
@@ -323,8 +420,171 @@ export default function SalesPipelineClient() {
       return;
     }
 
+    await logActivity({
+      companyId: String(opportunity.company_id),
+      entityType: "opportunity",
+      entityId: opportunity.id,
+      action: "deleted",
+      description: `Deleted opportunity "${opportunityTitle}".`,
+      metadata: {
+        opportunity_title: opportunityTitle,
+        stage: normaliseStage(opportunity.stage),
+        value: Number(opportunity.value || 0),
+        probability: Number(opportunity.probability || 0),
+      },
+    });
+
     setDeletingId(null);
     await loadSalesData();
+  }
+
+  function handleDragStart(
+    event: DragEvent<HTMLElement>,
+    opportunity: Opportunity,
+  ) {
+    if (movingId || deletingId) {
+      event.preventDefault();
+      return;
+    }
+
+    setDraggedOpportunityId(opportunity.id);
+    setPageError("");
+
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", opportunity.id);
+  }
+
+  function handleDragEnd() {
+    setDraggedOpportunityId(null);
+    setDragOverStage(null);
+  }
+
+  function handleDragOver(
+    event: DragEvent<HTMLElement>,
+    stage: OpportunityStage,
+  ) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setDragOverStage(stage);
+  }
+
+  function handleDragLeave(
+    event: DragEvent<HTMLElement>,
+    stage: OpportunityStage,
+  ) {
+    const nextTarget = event.relatedTarget as Node | null;
+
+    if (nextTarget && event.currentTarget.contains(nextTarget)) {
+      return;
+    }
+
+    if (dragOverStage === stage) {
+      setDragOverStage(null);
+    }
+  }
+
+  async function handleDrop(
+    event: DragEvent<HTMLElement>,
+    destinationStage: OpportunityStage,
+  ) {
+    event.preventDefault();
+
+    const opportunityId =
+      event.dataTransfer.getData("text/plain") ||
+      draggedOpportunityId;
+
+    setDraggedOpportunityId(null);
+    setDragOverStage(null);
+
+    if (!opportunityId || movingId) return;
+
+    const opportunity = opportunities.find(
+      (record) => record.id === opportunityId,
+    );
+
+    if (!opportunity) return;
+
+    const originalStage = normaliseStage(opportunity.stage);
+
+    if (originalStage === destinationStage) {
+      return;
+    }
+
+    const originalProbability = Number(
+      opportunity.probability || 0,
+    );
+
+    const newProbability = stageProbabilities[destinationStage];
+    const activityTime = new Date().toISOString();
+
+    setMovingId(opportunity.id);
+    setPageError("");
+
+    setOpportunities((current) =>
+      current.map((record) =>
+        record.id === opportunity.id
+          ? {
+              ...record,
+              stage: destinationStage,
+              status: destinationStage,
+              probability: newProbability,
+              last_activity: activityTime,
+            }
+          : record,
+      ),
+    );
+
+    const { error } = await supabase
+      .from("leads")
+      .update({
+        stage: destinationStage,
+        status: destinationStage,
+        probability: newProbability,
+        last_activity: activityTime,
+      })
+      .eq("id", opportunity.id);
+
+    if (error) {
+      setOpportunities((current) =>
+        current.map((record) =>
+          record.id === opportunity.id
+            ? {
+                ...record,
+                stage: originalStage,
+                status: originalStage,
+                probability: originalProbability,
+              }
+            : record,
+        ),
+      );
+
+      setPageError(
+        `The opportunity could not be moved: ${error.message}`,
+      );
+
+      setMovingId(null);
+      return;
+    }
+
+    await logActivity({
+      companyId: String(opportunity.company_id),
+      entityType: "opportunity",
+      entityId: opportunity.id,
+      action: "stage_changed",
+      description: `Moved opportunity "${
+        opportunity.title || "Untitled opportunity"
+      }" from ${originalStage} to ${destinationStage}.`,
+      metadata: {
+        opportunity_title:
+          opportunity.title || "Untitled opportunity",
+        old_stage: originalStage,
+        new_stage: destinationStage,
+        old_probability: originalProbability,
+        new_probability: newProbability,
+      },
+    });
+
+    setMovingId(null);
   }
 
   if (loading) {
@@ -349,7 +609,8 @@ export default function SalesPipelineClient() {
             </h2>
 
             <p className="mt-1 text-sm text-slate-500">
-              Manage opportunities across every company.
+              Drag opportunities between columns to update their sales
+              stage.
             </p>
           </div>
 
@@ -449,8 +710,16 @@ export default function SalesPipelineClient() {
                     companyMap={companyMap}
                     totalValue={stageValue}
                     deletingId={deletingId}
+                    movingId={movingId}
+                    draggedOpportunityId={draggedOpportunityId}
+                    dragActive={dragOverStage === stage}
                     onEdit={openEditModal}
                     onDelete={deleteOpportunity}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
                   />
                 );
               })}
@@ -481,19 +750,56 @@ function PipelineColumn({
   companyMap,
   totalValue,
   deletingId,
+  movingId,
+  draggedOpportunityId,
+  dragActive,
   onEdit,
   onDelete,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  onDragLeave,
+  onDrop,
 }: {
   stage: OpportunityStage;
   opportunities: Opportunity[];
   companyMap: Map<string, string>;
   totalValue: number;
   deletingId: string | null;
+  movingId: string | null;
+  draggedOpportunityId: string | null;
+  dragActive: boolean;
   onEdit: (opportunity: Opportunity) => void;
   onDelete: (opportunity: Opportunity) => void;
+  onDragStart: (
+    event: DragEvent<HTMLElement>,
+    opportunity: Opportunity,
+  ) => void;
+  onDragEnd: () => void;
+  onDragOver: (
+    event: DragEvent<HTMLElement>,
+    stage: OpportunityStage,
+  ) => void;
+  onDragLeave: (
+    event: DragEvent<HTMLElement>,
+    stage: OpportunityStage,
+  ) => void;
+  onDrop: (
+    event: DragEvent<HTMLElement>,
+    stage: OpportunityStage,
+  ) => void;
 }) {
   return (
-    <section className="flex min-h-[460px] flex-col rounded-2xl border border-slate-200 bg-slate-50">
+    <section
+      onDragOver={(event) => onDragOver(event, stage)}
+      onDragLeave={(event) => onDragLeave(event, stage)}
+      onDrop={(event) => onDrop(event, stage)}
+      className={`flex min-h-[460px] flex-col rounded-2xl border transition ${
+        dragActive
+          ? "border-blue-400 bg-blue-50 ring-2 ring-blue-200"
+          : "border-slate-200 bg-slate-50"
+      }`}
+    >
       <header className="border-b border-slate-200 p-4">
         <div className="flex items-center justify-between gap-3">
           <StageBadge stage={stage} />
@@ -510,9 +816,15 @@ function PipelineColumn({
 
       <div className="flex-1 space-y-3 p-3">
         {opportunities.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 px-3 py-8 text-center">
+          <div
+            className={`rounded-xl border border-dashed px-3 py-8 text-center transition ${
+              dragActive
+                ? "border-blue-400 bg-blue-100/60"
+                : "border-slate-300 bg-white/60"
+            }`}
+          >
             <p className="text-xs font-semibold text-slate-400">
-              No opportunities
+              {dragActive ? "Drop opportunity here" : "No opportunities"}
             </p>
           </div>
         ) : (
@@ -525,8 +837,14 @@ function PipelineColumn({
                 "Unknown company"
               }
               deleting={deletingId === opportunity.id}
+              moving={movingId === opportunity.id}
+              dragging={draggedOpportunityId === opportunity.id}
               onEdit={() => onEdit(opportunity)}
               onDelete={() => onDelete(opportunity)}
+              onDragStart={(event) =>
+                onDragStart(event, opportunity)
+              }
+              onDragEnd={onDragEnd}
             />
           ))
         )}
@@ -539,24 +857,41 @@ function PipelineCard({
   opportunity,
   companyName,
   deleting,
+  moving,
+  dragging,
   onEdit,
   onDelete,
+  onDragStart,
+  onDragEnd,
 }: {
   opportunity: Opportunity;
   companyName: string;
   deleting: boolean;
+  moving: boolean;
+  dragging: boolean;
   onEdit: () => void;
   onDelete: () => void;
+  onDragStart: (event: DragEvent<HTMLElement>) => void;
+  onDragEnd: () => void;
 }) {
   const companyHref = `/companies/${opportunity.company_id}`;
 
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md">
+    <article
+      draggable={!deleting && !moving}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      className={`cursor-grab rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition active:cursor-grabbing ${
+        dragging
+          ? "scale-95 opacity-40"
+          : "hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+      } ${moving ? "pointer-events-none opacity-60" : ""}`}
+    >
       <button
         type="button"
         onClick={onEdit}
-        disabled={deleting}
-        className="block w-full text-left disabled:cursor-not-allowed disabled:opacity-50"
+        disabled={deleting || moving}
+        className="block w-full text-left disabled:cursor-not-allowed"
       >
         <h3 className="break-words text-sm font-black leading-5 text-slate-900">
           {opportunity.title || "Untitled opportunity"}
@@ -596,6 +931,7 @@ function PipelineCard({
       <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
         <Link
           href={companyHref}
+          draggable={false}
           className="min-w-0 truncate text-xs font-bold text-blue-700 hover:underline"
         >
           {companyName}
@@ -604,10 +940,14 @@ function PipelineCard({
         <button
           type="button"
           onClick={onDelete}
-          disabled={deleting}
+          disabled={deleting || moving}
           className="shrink-0 text-xs font-bold text-red-600 transition hover:text-red-800 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {deleting ? "Deleting..." : "Delete"}
+          {deleting
+            ? "Deleting..."
+            : moving
+              ? "Moving..."
+              : "Delete"}
         </button>
       </div>
     </article>

@@ -7,9 +7,14 @@ const navItems = [
   { label: "Dashboard", href: "/", symbol: "⌂" },
   { label: "Companies", href: "/companies", symbol: "◇" },
   { label: "Sales", href: "/sales", symbol: "£" },
+  { label: "Tasks", href: "/tasks", symbol: "✓" },
 ];
 
-const plannedItems = ["Contacts", "Tasks", "Documents", "Reports"];
+const plannedItems = [
+  "Contacts",
+  "Documents",
+  "Reports",
+];
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -21,7 +26,9 @@ export default function Sidebar() {
           P
         </div>
 
-        <h1 className="mt-4 text-lg font-bold">The Platform</h1>
+        <h1 className="mt-4 text-lg font-bold">
+          The Platform
+        </h1>
 
         <p className="mt-1 text-xs text-slate-400">
           Working title · v0.1
@@ -32,7 +39,8 @@ export default function Sidebar() {
         {navItems.map((item) => {
           const active =
             pathname === item.href ||
-            (item.href !== "/" && pathname.startsWith(item.href));
+            (item.href !== "/" &&
+              pathname.startsWith(item.href));
 
           return (
             <Link
