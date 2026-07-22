@@ -5,6 +5,7 @@ export type ActivityEntityType =
   | "contact"
   | "opportunity"
   | "proposal"
+  | "catalogue_item"
   | "task"
   | "document";
 
