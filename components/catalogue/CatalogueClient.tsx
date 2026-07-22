@@ -8,17 +8,27 @@ import {
 } from "react";
 
 import CatalogueItemModal from "@/components/catalogue/CatalogueItemModal";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 import {
   CATALOGUE_ITEM_TYPES,
   calculateMargin,
+  duplicateCatalogueItem,
   getCatalogueItems,
+  setCatalogueItemActive,
+  setCatalogueItemFavourite,
   type CatalogueItem,
   type CatalogueItemType,
 } from "@/lib/catalogue";
 
 type StatusFilter = "all" | "active" | "archived";
 type TypeFilter = "all" | CatalogueItemType;
+type ConfirmationAction = "archive" | "restore" | "duplicate";
+
+interface PendingConfirmation {
+  action: ConfirmationAction;
+  item: CatalogueItem;
+}
 
 const TYPE_LABELS: Record<CatalogueItemType, string> = {
   product: "Product",
@@ -47,6 +57,16 @@ function formatPercentage(value: number) {
   }).format(value);
 }
 
+function sortCatalogueItems(items: CatalogueItem[]) {
+  return [...items].sort((first, second) => {
+    if (first.favourite !== second.favourite) {
+      return first.favourite ? -1 : 1;
+    }
+
+    return first.name.localeCompare(second.name);
+  });
+}
+
 export default function CatalogueClient() {
   const [items, setItems] = useState<CatalogueItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,6 +84,15 @@ export default function CatalogueClient() {
   const [selectedItem, setSelectedItem] =
     useState<CatalogueItem | null>(null);
 
+  const [pendingConfirmation, setPendingConfirmation] =
+    useState<PendingConfirmation | null>(null);
+
+  const [confirmationLoading, setConfirmationLoading] =
+    useState(false);
+
+  const [busyItemId, setBusyItemId] =
+    useState<string | null>(null);
+
   const loadItems = useCallback(async () => {
     setLoading(true);
     setPageError("");
@@ -77,7 +106,7 @@ export default function CatalogueClient() {
       return;
     }
 
-    setItems(result.data);
+    setItems(sortCatalogueItems(result.data));
     setLoading(false);
   }, []);
 
@@ -135,8 +164,8 @@ export default function CatalogueClient() {
   const metrics = useMemo(() => {
     const activeItems = items.filter((item) => item.active);
 
-    const favouriteItems = items.filter(
-      (item) => item.active && item.favourite,
+    const favouriteItems = activeItems.filter(
+      (item) => item.favourite,
     );
 
     const totalCostValue = activeItems.reduce(
@@ -151,18 +180,32 @@ export default function CatalogueClient() {
       0,
     );
 
-    const overallMargin = calculateMargin(
-      totalCostValue,
-      totalSellValue,
-    ).margin;
-
     return {
       total: items.length,
       active: activeItems.length,
       favourites: favouriteItems.length,
-      overallMargin,
+      overallMargin: calculateMargin(
+        totalCostValue,
+        totalSellValue,
+      ).margin,
     };
   }, [items]);
+
+  function replaceItem(updatedItem: CatalogueItem) {
+    setItems((currentItems) =>
+      sortCatalogueItems(
+        currentItems.map((item) =>
+          item.id === updatedItem.id ? updatedItem : item,
+        ),
+      ),
+    );
+  }
+
+  function addItem(newItem: CatalogueItem) {
+    setItems((currentItems) =>
+      sortCatalogueItems([newItem, ...currentItems]),
+    );
+  }
 
   function openCreateModal() {
     setSelectedItem(null);
@@ -180,27 +223,100 @@ export default function CatalogueClient() {
   }
 
   function handleSaved(savedItem: CatalogueItem) {
-    setItems((currentItems) => {
-      const itemExists = currentItems.some(
-        (item) => item.id === savedItem.id,
-      );
+    const itemExists = items.some(
+      (item) => item.id === savedItem.id,
+    );
 
-      const nextItems = itemExists
-        ? currentItems.map((item) =>
-            item.id === savedItem.id ? savedItem : item,
-          )
-        : [savedItem, ...currentItems];
-
-      return nextItems.sort((first, second) => {
-        if (first.favourite !== second.favourite) {
-          return first.favourite ? -1 : 1;
-        }
-
-        return first.name.localeCompare(second.name);
-      });
-    });
+    if (itemExists) {
+      replaceItem(savedItem);
+    } else {
+      addItem(savedItem);
+    }
 
     closeModal();
+  }
+
+  async function toggleFavourite(item: CatalogueItem) {
+    setBusyItemId(item.id);
+    setPageError("");
+
+    const result = await setCatalogueItemFavourite(
+      item.id,
+      !item.favourite,
+      { actorName: "Lucas" },
+    );
+
+    if (!result.success) {
+      setPageError(result.error);
+      setBusyItemId(null);
+      return;
+    }
+
+    replaceItem(result.data);
+    setBusyItemId(null);
+  }
+
+  function requestConfirmation(
+    action: ConfirmationAction,
+    item: CatalogueItem,
+  ) {
+    setPendingConfirmation({ action, item });
+  }
+
+  function cancelConfirmation() {
+    if (!confirmationLoading) {
+      setPendingConfirmation(null);
+    }
+  }
+
+  async function runConfirmedAction() {
+    if (!pendingConfirmation) {
+      return;
+    }
+
+    setConfirmationLoading(true);
+    setPageError("");
+
+    const { action, item } = pendingConfirmation;
+
+    if (action === "duplicate") {
+      const result = await duplicateCatalogueItem(
+        item.id,
+        { actorName: "Lucas" },
+      );
+
+      if (!result.success) {
+        setPageError(result.error);
+        setConfirmationLoading(false);
+        setPendingConfirmation(null);
+        return;
+      }
+
+      addItem(result.data);
+      setConfirmationLoading(false);
+      setPendingConfirmation(null);
+      openEditModal(result.data);
+      return;
+    }
+
+    const shouldBeActive = action === "restore";
+
+    const result = await setCatalogueItemActive(
+      item.id,
+      shouldBeActive,
+      { actorName: "Lucas" },
+    );
+
+    if (!result.success) {
+      setPageError(result.error);
+      setConfirmationLoading(false);
+      setPendingConfirmation(null);
+      return;
+    }
+
+    replaceItem(result.data);
+    setConfirmationLoading(false);
+    setPendingConfirmation(null);
   }
 
   function resetFilters() {
@@ -215,6 +331,10 @@ export default function CatalogueClient() {
     typeFilter !== "all" ||
     statusFilter !== "active" ||
     favouritesOnly;
+
+  const confirmationContent = getConfirmationContent(
+    pendingConfirmation,
+  );
 
   return (
     <>
@@ -404,7 +524,18 @@ export default function CatalogueClient() {
           ) : (
             <CatalogueTable
               items={filteredItems}
+              busyItemId={busyItemId}
               onEdit={openEditModal}
+              onFavourite={toggleFavourite}
+              onDuplicate={(item) =>
+                requestConfirmation("duplicate", item)
+              }
+              onArchive={(item) =>
+                requestConfirmation(
+                  item.active ? "archive" : "restore",
+                  item,
+                )
+              }
             />
           )}
         </div>
@@ -417,16 +548,37 @@ export default function CatalogueClient() {
         onClose={closeModal}
         onSaved={handleSaved}
       />
+
+      <ConfirmDialog
+        open={pendingConfirmation !== null}
+        title={confirmationContent.title}
+        description={confirmationContent.description}
+        confirmLabel={confirmationContent.confirmLabel}
+        destructive={
+          pendingConfirmation?.action === "archive"
+        }
+        loading={confirmationLoading}
+        onConfirm={() => void runConfirmedAction()}
+        onCancel={cancelConfirmation}
+      />
     </>
   );
 }
 
 function CatalogueTable({
   items,
+  busyItemId,
   onEdit,
+  onFavourite,
+  onDuplicate,
+  onArchive,
 }: {
   items: CatalogueItem[];
+  busyItemId: string | null;
   onEdit: (item: CatalogueItem) => void;
+  onFavourite: (item: CatalogueItem) => void;
+  onDuplicate: (item: CatalogueItem) => void;
+  onArchive: (item: CatalogueItem) => void;
 }) {
   return (
     <div className="overflow-x-auto">
@@ -453,6 +605,8 @@ function CatalogueTable({
               Number(item.sell_price || 0),
             );
 
+            const itemBusy = busyItemId === item.id;
+
             return (
               <tr
                 key={item.id}
@@ -460,20 +614,28 @@ function CatalogueTable({
               >
                 <td className="min-w-72 px-5 py-4 lg:px-6">
                   <div className="flex items-start gap-3">
-                    <span
+                    <button
+                      type="button"
+                      disabled={itemBusy}
+                      onClick={() => void onFavourite(item)}
                       aria-label={
                         item.favourite
-                          ? "Favourite item"
-                          : "Standard item"
+                          ? `Remove ${item.name} from favourites`
+                          : `Add ${item.name} to favourites`
                       }
-                      className={`mt-0.5 text-lg leading-none ${
+                      title={
                         item.favourite
-                          ? "text-amber-500"
-                          : "text-slate-300"
+                          ? "Remove from favourites"
+                          : "Add to favourites"
+                      }
+                      className={`mt-0.5 text-xl leading-none transition disabled:cursor-wait disabled:opacity-50 ${
+                        item.favourite
+                          ? "text-amber-500 hover:text-amber-600"
+                          : "text-slate-300 hover:text-amber-500"
                       }`}
                     >
                       {item.favourite ? "★" : "☆"}
-                    </span>
+                    </button>
 
                     <div>
                       <p className="font-semibold text-slate-900">
@@ -540,13 +702,35 @@ function CatalogueTable({
                 </td>
 
                 <td className="whitespace-nowrap px-5 py-4 text-right lg:px-6">
-                  <button
-                    type="button"
-                    onClick={() => onEdit(item)}
-                    className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
-                  >
-                    Edit
-                  </button>
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onEdit(item)}
+                      className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => onDuplicate(item)}
+                      className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                    >
+                      Duplicate
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => onArchive(item)}
+                      className={`rounded-lg border px-3 py-2 text-sm font-semibold transition ${
+                        item.active
+                          ? "border-red-200 bg-white text-red-600 hover:bg-red-50"
+                          : "border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50"
+                      }`}
+                    >
+                      {item.active ? "Archive" : "Restore"}
+                    </button>
+                  </div>
                 </td>
               </tr>
             );
@@ -555,6 +739,42 @@ function CatalogueTable({
       </table>
     </div>
   );
+}
+
+function getConfirmationContent(
+  confirmation: PendingConfirmation | null,
+) {
+  if (!confirmation) {
+    return {
+      title: "",
+      description: "",
+      confirmLabel: "Confirm",
+    };
+  }
+
+  const { action, item } = confirmation;
+
+  if (action === "duplicate") {
+    return {
+      title: "Duplicate catalogue item?",
+      description: `A new copy of "${item.name}" will be created without an SKU. The copied item will open automatically so you can review and rename it.`,
+      confirmLabel: "Duplicate item",
+    };
+  }
+
+  if (action === "restore") {
+    return {
+      title: "Restore catalogue item?",
+      description: `"${item.name}" will become available for selection on new proposals and transactions.`,
+      confirmLabel: "Restore item",
+    };
+  }
+
+  return {
+    title: "Archive catalogue item?",
+    description: `"${item.name}" will be hidden from active catalogue searches. Existing proposals and historic records will not be affected.`,
+    confirmLabel: "Archive item",
+  };
 }
 
 function MetricCard({

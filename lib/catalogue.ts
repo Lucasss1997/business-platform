@@ -407,3 +407,107 @@ export async function updateCatalogueItem(
     error: "",
   };
 }
+
+export async function setCatalogueItemFavourite(
+  catalogueItemId: string,
+  favourite: boolean,
+  options: CatalogueActivityOptions = {},
+): Promise<ServiceResult<CatalogueItem>> {
+  return updateCatalogueItem(
+    catalogueItemId,
+    { favourite },
+    options,
+  );
+}
+
+export async function setCatalogueItemActive(
+  catalogueItemId: string,
+  active: boolean,
+  options: CatalogueActivityOptions = {},
+): Promise<ServiceResult<CatalogueItem>> {
+  if (!catalogueItemId.trim()) {
+    return {
+      success: false,
+      data: null,
+      error: "Catalogue item ID is required.",
+    };
+  }
+
+  const { data, error } = await supabase
+    .from("catalogue_items")
+    .update({ active })
+    .eq("id", catalogueItemId)
+    .select()
+    .single();
+
+  if (error) {
+    return {
+      success: false,
+      data: null,
+      error: getCatalogueErrorMessage(error.message),
+    };
+  }
+
+  const catalogueItem = data as CatalogueItem;
+
+  await logActivity({
+    entityType: "catalogue_item",
+    entityId: catalogueItem.id,
+    action: "updated",
+    description: active
+      ? `Restored catalogue item "${catalogueItem.name}"`
+      : `Archived catalogue item "${catalogueItem.name}"`,
+    actorName: options.actorName ?? "System",
+  });
+
+  return {
+    success: true,
+    data: catalogueItem,
+    error: "",
+  };
+}
+
+export async function duplicateCatalogueItem(
+  catalogueItemId: string,
+  options: CatalogueActivityOptions = {},
+): Promise<ServiceResult<CatalogueItem>> {
+  const sourceResult = await getCatalogueItem(catalogueItemId);
+
+  if (!sourceResult.success) {
+    return sourceResult;
+  }
+
+  const source = sourceResult.data;
+
+  const duplicateResult = await createCatalogueItem(
+    {
+      sku: "",
+      name: `${source.name} (Copy)`,
+      item_type: source.item_type,
+      category: source.category,
+      manufacturer: source.manufacturer ?? "",
+      description: source.description ?? "",
+      unit: source.unit,
+      cost_price: Number(source.cost_price),
+      sell_price: Number(source.sell_price),
+      vat_rate: Number(source.vat_rate),
+      favourite: false,
+      active: true,
+    },
+    options,
+  );
+
+  if (!duplicateResult.success) {
+    return duplicateResult;
+  }
+
+  await logActivity({
+    entityType: "catalogue_item",
+    entityId: duplicateResult.data.id,
+    action: "created",
+    description: `Duplicated catalogue item "${source.name}" as "${duplicateResult.data.name}"`,
+    actorName: options.actorName ?? "System",
+  });
+
+  return duplicateResult;
+}
