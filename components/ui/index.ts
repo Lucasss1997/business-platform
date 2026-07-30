@@ -6,6 +6,13 @@ export type { ButtonProps } from "./Button";
 
 export { default as Card } from "./Card";
 
+export { default as DataGrid } from "./DataGrid";
+export type {
+  DataGridColumn,
+  DataGridProps,
+  SortDirection,
+} from "./DataGrid";
+
 export { default as Input } from "./input";
 export type { InputProps } from "./input";
 

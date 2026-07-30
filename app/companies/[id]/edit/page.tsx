@@ -1,6 +1,6 @@
 import AppShell from "@/components/layout/AppShell";
 import PageHeader from "@/components/ui/PageHeader";
-import EditCompanyClient from "@/components/EditCompanyClient";
+import EditCompanyClient from "@/components/company/EditCompanyClient";
 
 export default async function EditCompanyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
