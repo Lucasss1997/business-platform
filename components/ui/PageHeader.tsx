@@ -1,33 +1,71 @@
-import Link from "next/link";
+import type { ReactNode } from "react";
+import Button from "./Button";
+
+export type PageHeaderProps = {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  actionLabel?: string;
+  actionHref?: string;
+  actionIcon?: ReactNode;
+  secondaryActionLabel?: string;
+  secondaryActionHref?: string;
+  children?: ReactNode;
+};
 
 export default function PageHeader({
-  eyebrow = "The Platform",
+  eyebrow,
   title,
   subtitle,
   actionLabel,
   actionHref,
-}: {
-  eyebrow?: string;
-  title: string;
-  subtitle: string;
-  actionLabel?: string;
-  actionHref?: string;
-}) {
+  actionIcon,
+  secondaryActionLabel,
+  secondaryActionHref,
+  children,
+}: PageHeaderProps) {
   return (
-    <header className="border-b border-[var(--border)] bg-white px-6 py-6 lg:px-10">
-      <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--accent)]">
-        {eyebrow}
-      </p>
-      <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">{title}</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--text-secondary)]">{subtitle}</p>
+    <header className="border-b border-[var(--border)] bg-white">
+      <div className="flex flex-col gap-5 px-6 py-6 lg:flex-row lg:items-center lg:justify-between lg:px-10 lg:py-8">
+        <div className="min-w-0">
+          {eyebrow && (
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-[var(--accent)]">
+              {eyebrow}
+            </p>
+          )}
+
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)] lg:text-3xl">
+            {title}
+          </h1>
+
+          {subtitle && (
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--text-secondary)]">
+              {subtitle}
+            </p>
+          )}
         </div>
-        {actionLabel && actionHref ? (
-          <Link href={actionHref} className="inline-flex w-fit items-center justify-center rounded-xl bg-[var(--text-primary)] px-5 py-3 text-sm font-bold text-white transition hover:opacity-90">
-            {actionLabel}
-          </Link>
-        ) : null}
+
+        <div className="flex shrink-0 flex-wrap items-center gap-3">
+          {secondaryActionLabel && secondaryActionHref && (
+            <Button
+              href={secondaryActionHref}
+              variant="outline"
+            >
+              {secondaryActionLabel}
+            </Button>
+          )}
+
+          {actionLabel && actionHref && (
+            <Button
+              href={actionHref}
+              leftIcon={actionIcon}
+            >
+              {actionLabel}
+            </Button>
+          )}
+
+          {children}
+        </div>
       </div>
     </header>
   );
