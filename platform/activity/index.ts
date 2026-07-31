@@ -1,6 +1,4 @@
-export {
-  logActivity,
-} from "@/platform/activity";
+export { logActivity } from "@/platform/activity/log";
 
 export type {
   ActivityAction,
@@ -9,4 +7,4 @@ export type {
   ActivityMetadata,
   ActivityMetadataValue,
   LogActivityInput,
-} from "@/platform/activity";
+} from "@/platform/activity/types";

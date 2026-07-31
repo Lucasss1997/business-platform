@@ -6,6 +6,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 
+import { logActivity } from "@/platform/activity";
 import { supabase } from "@/lib/supabase";
 import {
   companyStatuses,
@@ -66,6 +67,89 @@ function normaliseCompanyName(value: string) {
     .replace(/[^a-z0-9]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+
+type CompanyPayload = ReturnType<typeof normaliseCompanyValues>;
+
+const trackedFields: {
+  key: keyof CompanyFormValues;
+  label: string;
+}[] = [
+  { key: "company_name", label: "Company name" },
+  { key: "website", label: "Website" },
+  { key: "phone", label: "Phone" },
+  { key: "industry", label: "Industry" },
+  { key: "contact_name", label: "Primary contact" },
+  { key: "email", label: "Email" },
+  { key: "mobile", label: "Mobile" },
+  { key: "division", label: "Division" },
+  { key: "status", label: "Status" },
+  { key: "lead_source", label: "Lead source" },
+  { key: "annual_value", label: "Annual value" },
+  { key: "notes", label: "Notes" },
+];
+
+function normaliseCompanyValues(values: CompanyFormValues) {
+  return {
+    ...values,
+    company_name: values.company_name.trim(),
+    website: values.website?.trim() || null,
+    phone: values.phone?.trim() || null,
+    industry: values.industry || null,
+    contact_name: values.contact_name?.trim() || null,
+    email: values.email?.trim() || null,
+    mobile: values.mobile?.trim() || null,
+    division: values.division || null,
+    status: values.status || "Prospect",
+    lead_source: values.lead_source?.trim() || null,
+    annual_value: values.annual_value ?? 0,
+    notes: values.notes?.trim() || null,
+  };
+}
+
+function formatActivityValue(
+  key: keyof CompanyFormValues,
+  value: CompanyPayload[keyof CompanyPayload],
+) {
+  if (key === "annual_value") {
+    return new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: "GBP",
+      maximumFractionDigits: 2,
+    }).format(Number(value || 0));
+  }
+
+  if (key === "notes") {
+    return value ? "Notes present" : "No notes";
+  }
+
+  return String(value || "Not recorded");
+}
+
+function getCompanyChanges(
+  initialValues: CompanyFormValues,
+  nextValues: CompanyPayload,
+) {
+  const initial = normaliseCompanyValues(initialValues);
+
+  return trackedFields.flatMap(({ key, label }) => {
+    const previousValue = initial[key];
+    const nextValue = nextValues[key];
+
+    if (previousValue === nextValue) {
+      return [];
+    }
+
+    return [
+      {
+        key,
+        label,
+        previousValue: formatActivityValue(key, previousValue),
+        nextValue: formatActivityValue(key, nextValue),
+      },
+    ];
+  });
 }
 
 export default function CompanyForm({
@@ -195,21 +279,7 @@ export default function CompanyForm({
   }
 
   function buildPayload() {
-    return {
-      ...values,
-      company_name: values.company_name.trim(),
-      website: values.website?.trim() || null,
-      phone: values.phone?.trim() || null,
-      industry: values.industry || null,
-      contact_name: values.contact_name?.trim() || null,
-      email: values.email?.trim() || null,
-      mobile: values.mobile?.trim() || null,
-      division: values.division || null,
-      status: values.status || "Prospect",
-      lead_source: values.lead_source?.trim() || null,
-      annual_value: values.annual_value || 0,
-      notes: values.notes?.trim() || null,
-    };
+    return normaliseCompanyValues(values);
   }
 
   async function saveCompany() {
@@ -218,27 +288,107 @@ export default function CompanyForm({
 
     const payload = buildPayload();
 
-    const result = companyId
-      ? await supabase
-          .from("companies")
-          .update(payload)
-          .eq("id", companyId)
-      : await supabase
-          .from("companies")
-          .insert(payload);
+    if (companyId) {
+      const originalValues: CompanyFormValues = {
+        ...emptyValues,
+        ...initialValues,
+      };
 
-    if (result.error) {
-      setError(result.error.message);
+      const changes = getCompanyChanges(
+        originalValues,
+        payload,
+      );
+
+      const { error: updateError } = await supabase
+        .from("companies")
+        .update(payload)
+        .eq("id", companyId);
+
+      if (updateError) {
+        setError(updateError.message);
+        setSaving(false);
+        return;
+      }
+
+      if (changes.length === 0) {
+        await logActivity({
+          companyId,
+          entityType: "company",
+          entityId: companyId,
+          action: "updated",
+          description: `${payload.company_name} was saved with no recorded field changes`,
+          actorName: "Lucas",
+          metadata: {
+            company_name: payload.company_name,
+          },
+        });
+      } else {
+        await Promise.all(
+          changes.map((change) =>
+            logActivity({
+              companyId,
+              entityType: "company",
+              entityId: companyId,
+              action: "updated",
+              description: `${change.label} changed from ${change.previousValue} to ${change.nextValue}`,
+              actorName: "Lucas",
+              metadata: {
+                field: String(change.key),
+                previous_value: change.previousValue,
+                new_value: change.nextValue,
+              },
+            }),
+          ),
+        );
+      }
+
+      router.push(`/companies/${companyId}`);
+      router.refresh();
+      return;
+    }
+
+    const {
+      data: createdCompany,
+      error: insertError,
+    } = await supabase
+      .from("companies")
+      .insert(payload)
+      .select("id")
+      .single();
+
+    if (insertError) {
+      setError(insertError.message);
       setSaving(false);
       return;
     }
 
-    router.push(
-      companyId
-        ? `/companies/${companyId}`
-        : "/companies",
+    if (!createdCompany?.id) {
+      setError(
+        "The company was created but its ID could not be returned.",
+      );
+      setSaving(false);
+      return;
+    }
+
+    const createdCompanyId = String(
+      createdCompany.id,
     );
 
+    await logActivity({
+      companyId: createdCompanyId,
+      entityType: "company",
+      entityId: createdCompanyId,
+      action: "created",
+      description: `${payload.company_name} was created`,
+      actorName: "Lucas",
+      metadata: {
+        company_name: payload.company_name,
+        status: payload.status,
+        annual_value: payload.annual_value,
+      },
+    });
+
+    router.push(`/companies/${createdCompanyId}`);
     router.refresh();
   }
 
