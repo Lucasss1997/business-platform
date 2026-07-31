@@ -6,13 +6,18 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 
-import { logActivity } from "@/platform/activity";
-import { supabase } from "@/lib/supabase";
 import {
   companyStatuses,
   divisions,
   type CompanyFormValues,
 } from "@/lib/types/company";
+import {
+  createCompany,
+  findDuplicateCompany,
+  normaliseCompanyName,
+  updateCompany,
+  type ExistingCompany,
+} from "@/modules/companies";
 
 const industries = [
   "Construction",
@@ -44,113 +49,14 @@ const emptyValues: CompanyFormValues = {
   notes: "",
 };
 
-type ExistingCompany = {
-  id: string | number;
-  company_name: string;
-  status: string | null;
-  industry: string | null;
-  division: string | null;
-};
-
-type DuplicateCheckContext = "name-field" | "submit";
+type DuplicateCheckContext =
+  | "name-field"
+  | "submit";
 
 type CompanyFormProps = {
   companyId?: string;
   initialValues?: Partial<CompanyFormValues>;
 };
-
-function normaliseCompanyName(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/&/g, "and")
-    .replace(/[^a-z0-9]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-
-type CompanyPayload = ReturnType<typeof normaliseCompanyValues>;
-
-const trackedFields: {
-  key: keyof CompanyFormValues;
-  label: string;
-}[] = [
-  { key: "company_name", label: "Company name" },
-  { key: "website", label: "Website" },
-  { key: "phone", label: "Phone" },
-  { key: "industry", label: "Industry" },
-  { key: "contact_name", label: "Primary contact" },
-  { key: "email", label: "Email" },
-  { key: "mobile", label: "Mobile" },
-  { key: "division", label: "Division" },
-  { key: "status", label: "Status" },
-  { key: "lead_source", label: "Lead source" },
-  { key: "annual_value", label: "Annual value" },
-  { key: "notes", label: "Notes" },
-];
-
-function normaliseCompanyValues(values: CompanyFormValues) {
-  return {
-    ...values,
-    company_name: values.company_name.trim(),
-    website: values.website?.trim() || null,
-    phone: values.phone?.trim() || null,
-    industry: values.industry || null,
-    contact_name: values.contact_name?.trim() || null,
-    email: values.email?.trim() || null,
-    mobile: values.mobile?.trim() || null,
-    division: values.division || null,
-    status: values.status || "Prospect",
-    lead_source: values.lead_source?.trim() || null,
-    annual_value: values.annual_value ?? 0,
-    notes: values.notes?.trim() || null,
-  };
-}
-
-function formatActivityValue(
-  key: keyof CompanyFormValues,
-  value: CompanyPayload[keyof CompanyPayload],
-) {
-  if (key === "annual_value") {
-    return new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: "GBP",
-      maximumFractionDigits: 2,
-    }).format(Number(value || 0));
-  }
-
-  if (key === "notes") {
-    return value ? "Notes present" : "No notes";
-  }
-
-  return String(value || "Not recorded");
-}
-
-function getCompanyChanges(
-  initialValues: CompanyFormValues,
-  nextValues: CompanyPayload,
-) {
-  const initial = normaliseCompanyValues(initialValues);
-
-  return trackedFields.flatMap(({ key, label }) => {
-    const previousValue = initial[key];
-    const nextValue = nextValues[key];
-
-    if (previousValue === nextValue) {
-      return [];
-    }
-
-    return [
-      {
-        key,
-        label,
-        previousValue: formatActivityValue(key, previousValue),
-        nextValue: formatActivityValue(key, nextValue),
-      },
-    ];
-  });
-}
 
 export default function CompanyForm({
   companyId,
@@ -158,28 +64,39 @@ export default function CompanyForm({
 }: CompanyFormProps) {
   const router = useRouter();
 
-  const [values, setValues] = useState<CompanyFormValues>({
-    ...emptyValues,
-    ...initialValues,
-  });
+  const [values, setValues] =
+    useState<CompanyFormValues>({
+      ...emptyValues,
+      ...initialValues,
+    });
 
   const [saving, setSaving] = useState(false);
-  const [checkingName, setCheckingName] = useState(false);
+  const [checkingName, setCheckingName] =
+    useState(false);
   const [error, setError] = useState("");
 
-  const [duplicateCompany, setDuplicateCompany] =
-    useState<ExistingCompany | null>(null);
+  const [
+    duplicateCompany,
+    setDuplicateCompany,
+  ] = useState<ExistingCompany | null>(null);
 
-  const [duplicateCheckContext, setDuplicateCheckContext] =
-    useState<DuplicateCheckContext>("name-field");
+  const [
+    duplicateCheckContext,
+    setDuplicateCheckContext,
+  ] = useState<DuplicateCheckContext>(
+    "name-field",
+  );
 
-  const [approvedDuplicateName, setApprovedDuplicateName] =
-    useState("");
+  const [
+    approvedDuplicateName,
+    setApprovedDuplicateName,
+  ] = useState("");
 
   const inputClass =
     "mt-2 w-full rounded-xl border border-[var(--border)] bg-white px-3.5 py-3 text-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200";
 
-  const labelClass = "text-sm font-semibold text-slate-700";
+  const labelClass =
+    "text-sm font-semibold text-slate-700";
 
   function update(
     name: keyof CompanyFormValues,
@@ -201,51 +118,14 @@ export default function CompanyForm({
     }
   }
 
-  async function findExistingCompany(
-    companyName: string,
-  ): Promise<ExistingCompany | null> {
-    const normalisedName = normaliseCompanyName(companyName);
-
-    if (!normalisedName) {
-      return null;
-    }
-
-    const { data, error: checkError } = await supabase
-      .from("companies")
-      .select(
-        "id, company_name, status, industry, division",
-      );
-
-    if (checkError) {
-      throw new Error(checkError.message);
-    }
-
-    const companies = (data ?? []) as ExistingCompany[];
-
-    return (
-      companies.find((company) => {
-        const isCurrentCompany =
-          companyId &&
-          String(company.id) === String(companyId);
-
-        if (isCurrentCompany) {
-          return false;
-        }
-
-        return (
-          normaliseCompanyName(company.company_name) ===
-          normalisedName
-        );
-      }) ?? null
-    );
-  }
-
   async function checkNameOnBlur() {
     if (companyId) {
       return;
     }
 
-    const companyName = values.company_name.trim();
+    const companyName =
+      values.company_name.trim();
+
     const normalisedName =
       normaliseCompanyName(companyName);
 
@@ -261,7 +141,10 @@ export default function CompanyForm({
 
     try {
       const existingCompany =
-        await findExistingCompany(companyName);
+        await findDuplicateCompany(
+          companyName,
+          companyId,
+        );
 
       if (existingCompany) {
         setDuplicateCheckContext("name-field");
@@ -278,124 +161,53 @@ export default function CompanyForm({
     }
   }
 
-  function buildPayload() {
-    return normaliseCompanyValues(values);
-  }
-
   async function saveCompany() {
     setSaving(true);
     setError("");
 
-    const payload = buildPayload();
+    try {
+      if (companyId) {
+        const originalValues: CompanyFormValues = {
+          ...emptyValues,
+          ...initialValues,
+        };
 
-    if (companyId) {
-      const originalValues: CompanyFormValues = {
-        ...emptyValues,
-        ...initialValues,
-      };
+        await updateCompany(
+          companyId,
+          values,
+          originalValues,
+        );
 
-      const changes = getCompanyChanges(
-        originalValues,
-        payload,
-      );
-
-      const { error: updateError } = await supabase
-        .from("companies")
-        .update(payload)
-        .eq("id", companyId);
-
-      if (updateError) {
-        setError(updateError.message);
-        setSaving(false);
+        router.push(`/companies/${companyId}`);
+        router.refresh();
         return;
       }
 
-      if (changes.length === 0) {
-        await logActivity({
-          companyId,
-          entityType: "company",
-          entityId: companyId,
-          action: "updated",
-          description: `${payload.company_name} was saved with no recorded field changes`,
-          actorName: "Lucas",
-          metadata: {
-            company_name: payload.company_name,
-          },
-        });
-      } else {
-        await Promise.all(
-          changes.map((change) =>
-            logActivity({
-              companyId,
-              entityType: "company",
-              entityId: companyId,
-              action: "updated",
-              description: `${change.label} changed from ${change.previousValue} to ${change.nextValue}`,
-              actorName: "Lucas",
-              metadata: {
-                field: String(change.key),
-                previous_value: change.previousValue,
-                new_value: change.nextValue,
-              },
-            }),
-          ),
-        );
-      }
+      const createdCompanyId =
+        await createCompany(values);
 
-      router.push(`/companies/${companyId}`);
-      router.refresh();
-      return;
-    }
-
-    const {
-      data: createdCompany,
-      error: insertError,
-    } = await supabase
-      .from("companies")
-      .insert(payload)
-      .select("id")
-      .single();
-
-    if (insertError) {
-      setError(insertError.message);
-      setSaving(false);
-      return;
-    }
-
-    if (!createdCompany?.id) {
-      setError(
-        "The company was created but its ID could not be returned.",
+      router.push(
+        `/companies/${createdCompanyId}`,
       );
+      router.refresh();
+    } catch (saveError) {
+      setError(
+        saveError instanceof Error
+          ? saveError.message
+          : "The company could not be saved.",
+      );
+
       setSaving(false);
-      return;
     }
-
-    const createdCompanyId = String(
-      createdCompany.id,
-    );
-
-    await logActivity({
-      companyId: createdCompanyId,
-      entityType: "company",
-      entityId: createdCompanyId,
-      action: "created",
-      description: `${payload.company_name} was created`,
-      actorName: "Lucas",
-      metadata: {
-        company_name: payload.company_name,
-        status: payload.status,
-        annual_value: payload.annual_value,
-      },
-    });
-
-    router.push(`/companies/${createdCompanyId}`);
-    router.refresh();
   }
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(
+    event: FormEvent<HTMLFormElement>,
+  ) {
     event.preventDefault();
 
-    const companyName = values.company_name.trim();
+    const companyName =
+      values.company_name.trim();
 
     if (!companyName) {
       setError("Please enter a company name.");
@@ -409,14 +221,22 @@ export default function CompanyForm({
       const normalisedName =
         normaliseCompanyName(companyName);
 
-      if (approvedDuplicateName !== normalisedName) {
+      if (
+        approvedDuplicateName !==
+        normalisedName
+      ) {
         try {
           const existingCompany =
-            await findExistingCompany(companyName);
+            await findDuplicateCompany(
+              companyName,
+              companyId,
+            );
 
           if (existingCompany) {
             setDuplicateCheckContext("submit");
-            setDuplicateCompany(existingCompany);
+            setDuplicateCompany(
+              existingCompany,
+            );
             setSaving(false);
             return;
           }
@@ -447,14 +267,17 @@ export default function CompanyForm({
   }
 
   function addAsNewCompany() {
-    const approvedName = normaliseCompanyName(
-      values.company_name,
-    );
+    const approvedName =
+      normaliseCompanyName(
+        values.company_name,
+      );
 
     setApprovedDuplicateName(approvedName);
     setDuplicateCompany(null);
 
-    if (duplicateCheckContext === "submit") {
+    if (
+      duplicateCheckContext === "submit"
+    ) {
       void saveCompany();
     }
   }
@@ -517,7 +340,10 @@ export default function CompanyForm({
                 className={inputClass}
                 value={values.website || ""}
                 onChange={(event) =>
-                  update("website", event.target.value)
+                  update(
+                    "website",
+                    event.target.value,
+                  )
                 }
                 placeholder="https://example.co.uk"
               />
@@ -530,7 +356,10 @@ export default function CompanyForm({
                 className={inputClass}
                 value={values.phone || ""}
                 onChange={(event) =>
-                  update("phone", event.target.value)
+                  update(
+                    "phone",
+                    event.target.value,
+                  )
                 }
                 placeholder="Main office number"
               />
@@ -543,7 +372,10 @@ export default function CompanyForm({
                 className={inputClass}
                 value={values.industry || ""}
                 onChange={(event) =>
-                  update("industry", event.target.value)
+                  update(
+                    "industry",
+                    event.target.value,
+                  )
                 }
               >
                 <option value="">
@@ -551,7 +383,10 @@ export default function CompanyForm({
                 </option>
 
                 {industries.map((item) => (
-                  <option key={item} value={item}>
+                  <option
+                    key={item}
+                    value={item}
+                  >
                     {item}
                   </option>
                 ))}
@@ -566,8 +401,8 @@ export default function CompanyForm({
           </h2>
 
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            We can move this into a full contacts module
-            in v0.2.
+            We can move this into a full
+            contacts module in v0.2.
           </p>
 
           <div className="mt-5 grid gap-5 md:grid-cols-3">
@@ -576,7 +411,9 @@ export default function CompanyForm({
 
               <input
                 className={inputClass}
-                value={values.contact_name || ""}
+                value={
+                  values.contact_name || ""
+                }
                 onChange={(event) =>
                   update(
                     "contact_name",
@@ -595,7 +432,10 @@ export default function CompanyForm({
                 className={inputClass}
                 value={values.email || ""}
                 onChange={(event) =>
-                  update("email", event.target.value)
+                  update(
+                    "email",
+                    event.target.value,
+                  )
                 }
                 placeholder="name@company.co.uk"
               />
@@ -608,7 +448,10 @@ export default function CompanyForm({
                 className={inputClass}
                 value={values.mobile || ""}
                 onChange={(event) =>
-                  update("mobile", event.target.value)
+                  update(
+                    "mobile",
+                    event.target.value,
+                  )
                 }
                 placeholder="Mobile number"
               />
@@ -629,7 +472,10 @@ export default function CompanyForm({
                 className={inputClass}
                 value={values.division || ""}
                 onChange={(event) =>
-                  update("division", event.target.value)
+                  update(
+                    "division",
+                    event.target.value,
+                  )
                 }
               >
                 <option value="">
@@ -637,7 +483,10 @@ export default function CompanyForm({
                 </option>
 
                 {divisions.map((item) => (
-                  <option key={item} value={item}>
+                  <option
+                    key={item}
+                    value={item}
+                  >
                     {item}
                   </option>
                 ))}
@@ -649,16 +498,26 @@ export default function CompanyForm({
 
               <select
                 className={inputClass}
-                value={values.status || "Prospect"}
+                value={
+                  values.status || "Prospect"
+                }
                 onChange={(event) =>
-                  update("status", event.target.value)
+                  update(
+                    "status",
+                    event.target.value,
+                  )
                 }
               >
-                {companyStatuses.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
+                {companyStatuses.map(
+                  (item) => (
+                    <option
+                      key={item}
+                      value={item}
+                    >
+                      {item}
+                    </option>
+                  ),
+                )}
               </select>
             </label>
 
@@ -667,7 +526,9 @@ export default function CompanyForm({
 
               <input
                 className={inputClass}
-                value={values.lead_source || ""}
+                value={
+                  values.lead_source || ""
+                }
                 onChange={(event) =>
                   update(
                     "lead_source",
@@ -686,7 +547,9 @@ export default function CompanyForm({
                 step="0.01"
                 type="number"
                 className={inputClass}
-                value={values.annual_value ?? ""}
+                value={
+                  values.annual_value ?? ""
+                }
                 onChange={(event) =>
                   update(
                     "annual_value",
@@ -708,7 +571,10 @@ export default function CompanyForm({
               className={inputClass}
               value={values.notes || ""}
               onChange={(event) =>
-                update("notes", event.target.value)
+                update(
+                  "notes",
+                  event.target.value,
+                )
               }
               placeholder="Useful background, current requirements and next steps"
             />
@@ -761,7 +627,9 @@ export default function CompanyForm({
 
               <button
                 type="button"
-                onClick={closeDuplicateWarning}
+                onClick={
+                  closeDuplicateWarning
+                }
                 aria-label="Close duplicate warning"
                 className="rounded-lg px-2 py-1 text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
               >
@@ -770,14 +638,17 @@ export default function CompanyForm({
             </div>
 
             <p className="mt-4 text-sm leading-6 text-slate-600">
-              A company with the same name is already in
-              the CRM. Check the existing record before
-              creating another one.
+              A company with the same name is
+              already in the CRM. Check the
+              existing record before creating
+              another one.
             </p>
 
             <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
               <p className="font-bold text-slate-900">
-                {duplicateCompany.company_name}
+                {
+                  duplicateCompany.company_name
+                }
               </p>
 
               <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-600">
@@ -788,13 +659,17 @@ export default function CompanyForm({
 
                 {duplicateCompany.industry ? (
                   <span className="rounded-full bg-white px-2.5 py-1 shadow-sm">
-                    {duplicateCompany.industry}
+                    {
+                      duplicateCompany.industry
+                    }
                   </span>
                 ) : null}
 
                 {duplicateCompany.division ? (
                   <span className="rounded-full bg-white px-2.5 py-1 shadow-sm">
-                    {duplicateCompany.division}
+                    {
+                      duplicateCompany.division
+                    }
                   </span>
                 ) : null}
               </div>
@@ -803,7 +678,9 @@ export default function CompanyForm({
             <div className="mt-6 flex flex-col gap-3">
               <button
                 type="button"
-                onClick={useExistingCompany}
+                onClick={
+                  useExistingCompany
+                }
                 className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-bold text-white transition hover:bg-slate-700"
               >
                 Use existing company
@@ -819,7 +696,9 @@ export default function CompanyForm({
 
               <button
                 type="button"
-                onClick={closeDuplicateWarning}
+                onClick={
+                  closeDuplicateWarning
+                }
                 className="px-5 py-2 text-sm font-semibold text-slate-500 transition hover:text-slate-900"
               >
                 Cancel
@@ -827,8 +706,9 @@ export default function CompanyForm({
             </div>
 
             <p className="mt-4 text-xs leading-5 text-slate-400">
-              Choosing “Add as a new company anyway” does
-              not merge or alter the existing record.
+              Choosing “Add as a new company
+              anyway” does not merge or alter
+              the existing record.
             </p>
           </div>
         </div>
