@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { supabase } from "@/lib/supabase";
+
+import { getCompanyActivity } from "@/platform/activity";
 
 type ActivityMetadata = Record<
   string,
@@ -50,8 +51,10 @@ const actionStyles: Record<
   updated: {
     label: "Updated",
     icon: "✎",
-    badgeClassName: "border-blue-200 bg-blue-50 text-blue-700",
-    iconClassName: "border-blue-200 bg-blue-50 text-blue-700",
+    badgeClassName:
+      "border-blue-200 bg-blue-50 text-blue-700",
+    iconClassName:
+      "border-blue-200 bg-blue-50 text-blue-700",
   },
   stage_changed: {
     label: "Stage changed",
@@ -61,11 +64,21 @@ const actionStyles: Record<
     iconClassName:
       "border-violet-200 bg-violet-50 text-violet-700",
   },
+  status_changed: {
+    label: "Status changed",
+    icon: "→",
+    badgeClassName:
+      "border-violet-200 bg-violet-50 text-violet-700",
+    iconClassName:
+      "border-violet-200 bg-violet-50 text-violet-700",
+  },
   deleted: {
     label: "Deleted",
     icon: "×",
-    badgeClassName: "border-red-200 bg-red-50 text-red-700",
-    iconClassName: "border-red-200 bg-red-50 text-red-700",
+    badgeClassName:
+      "border-red-200 bg-red-50 text-red-700",
+    iconClassName:
+      "border-red-200 bg-red-50 text-red-700",
   },
   completed: {
     label: "Completed",
@@ -104,17 +117,23 @@ const actionStyles: Record<
 const defaultActionStyle = {
   label: "Activity",
   icon: "•",
-  badgeClassName: "border-slate-200 bg-slate-100 text-slate-700",
-  iconClassName: "border-slate-200 bg-slate-100 text-slate-700",
+  badgeClassName:
+    "border-slate-200 bg-slate-100 text-slate-700",
+  iconClassName:
+    "border-slate-200 bg-slate-100 text-slate-700",
 };
 
 function getActionStyle(action: string) {
-  return actionStyles[action] || {
-    ...defaultActionStyle,
-    label: action
-      .replaceAll("_", " ")
-      .replace(/\b\w/g, (character) => character.toUpperCase()),
-  };
+  return (
+    actionStyles[action] || {
+      ...defaultActionStyle,
+      label: action
+        .replaceAll("_", " ")
+        .replace(/\b\w/g, (character) =>
+          character.toUpperCase(),
+        ),
+    }
+  );
 }
 
 function formatActivityTime(value: string) {
@@ -172,9 +191,13 @@ function getDateLabel(value: string) {
 
   yesterday.setDate(today.getDate() - 1);
 
-  const activityKey = getDateKey(activityDate.toISOString());
+  const activityKey = getDateKey(
+    activityDate.toISOString(),
+  );
   const todayKey = getDateKey(today.toISOString());
-  const yesterdayKey = getDateKey(yesterday.toISOString());
+  const yesterdayKey = getDateKey(
+    yesterday.toISOString(),
+  );
 
   if (activityKey === todayKey) {
     return "Today";
@@ -205,7 +228,9 @@ function getEntityLabel(entityType: string) {
     labels[entityType] ||
     entityType
       .replaceAll("_", " ")
-      .replace(/\b\w/g, (character) => character.toUpperCase())
+      .replace(/\b\w/g, (character) =>
+        character.toUpperCase(),
+      )
   );
 }
 
@@ -213,7 +238,9 @@ export default function ActivityTimeline({
   companyId,
   limit = 100,
 }: ActivityTimelineProps) {
-  const [activities, setActivities] = useState<ActivityRecord[]>([]);
+  const [activities, setActivities] = useState<
+    ActivityRecord[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -227,42 +254,35 @@ export default function ActivityTimeline({
     setLoading(true);
     setError("");
 
-    const { data, error: queryError } = await supabase
-      .from("activity_log")
-      .select(
-        `
-          id,
-          company_id,
-          entity_type,
-          entity_id,
-          action,
-          description,
-          actor_name,
-          metadata,
-          created_at
-        `,
-      )
-      .eq("company_id", companyId)
-      .order("created_at", { ascending: false })
-      .limit(limit);
+    try {
+      const data = await getCompanyActivity(
+        companyId,
+        limit,
+      );
 
-    if (queryError) {
-      setError(queryError.message);
+      setActivities(data as ActivityRecord[]);
+    } catch (queryError) {
+      setError(
+        queryError instanceof Error
+          ? queryError.message
+          : "Activity could not be loaded.",
+      );
+
       setActivities([]);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    setActivities((data || []) as ActivityRecord[]);
-    setLoading(false);
   }, [companyId, limit]);
 
   useEffect(() => {
-    loadActivities();
+    void loadActivities();
   }, [loadActivities]);
 
   const groupedActivities = useMemo<DateGroup[]>(() => {
-    const groups = new Map<string, ActivityRecord[]>();
+    const groups = new Map<
+      string,
+      ActivityRecord[]
+    >();
 
     activities.forEach((activity) => {
       const key = getDateKey(activity.created_at);
@@ -272,10 +292,14 @@ export default function ActivityTimeline({
       groups.set(key, existingActivities);
     });
 
-    return Array.from(groups.values()).map((groupActivities) => ({
-      label: getDateLabel(groupActivities[0].created_at),
-      activities: groupActivities,
-    }));
+    return Array.from(groups.values()).map(
+      (groupActivities) => ({
+        label: getDateLabel(
+          groupActivities[0].created_at,
+        ),
+        activities: groupActivities,
+      }),
+    );
   }, [activities]);
 
   if (loading) {
@@ -301,11 +325,13 @@ export default function ActivityTimeline({
           Activity could not be loaded
         </h3>
 
-        <p className="mt-2 text-sm text-red-700">{error}</p>
+        <p className="mt-2 text-sm text-red-700">
+          {error}
+        </p>
 
         <button
           type="button"
-          onClick={loadActivities}
+          onClick={() => void loadActivities()}
           className="mt-4 rounded-xl bg-red-700 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-red-800"
         >
           Try again
@@ -326,7 +352,8 @@ export default function ActivityTimeline({
         </h3>
 
         <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">
-          Changes involving this company will appear here automatically.
+          Changes involving this company will appear here
+          automatically.
         </p>
       </section>
     );
@@ -341,13 +368,14 @@ export default function ActivityTimeline({
           </h2>
 
           <p className="mt-1 text-sm text-slate-500">
-            A chronological record of activity involving this company.
+            A chronological record of activity involving
+            this company.
           </p>
         </div>
 
         <button
           type="button"
-          onClick={loadActivities}
+          onClick={() => void loadActivities()}
           className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
         >
           Refresh
@@ -367,77 +395,89 @@ export default function ActivityTimeline({
               </div>
 
               <div className="space-y-0">
-                {group.activities.map((activity, index) => {
-                  const actionStyle = getActionStyle(activity.action);
-                  const isLast =
-                    index === group.activities.length - 1;
+                {group.activities.map(
+                  (activity, index) => {
+                    const actionStyle =
+                      getActionStyle(activity.action);
 
-                  return (
-                    <article
-                      key={activity.id}
-                      className="relative grid grid-cols-[44px_minmax(0,1fr)] gap-4"
-                    >
-                      {!isLast ? (
-                        <div className="absolute bottom-0 left-[21px] top-11 w-px bg-slate-200" />
-                      ) : null}
+                    const isLast =
+                      index ===
+                      group.activities.length - 1;
 
-                      <div
-                        className={`relative z-10 flex h-11 w-11 items-center justify-center rounded-full border text-lg font-black ${actionStyle.iconClassName}`}
+                    return (
+                      <article
+                        key={activity.id}
+                        className="relative grid grid-cols-[44px_minmax(0,1fr)] gap-4"
                       >
-                        {actionStyle.icon}
-                      </div>
+                        {!isLast ? (
+                          <div className="absolute bottom-0 left-[21px] top-11 w-px bg-slate-200" />
+                        ) : null}
 
-                      <div
-                        className={`min-w-0 ${
-                          isLast ? "pb-0" : "pb-6"
-                        }`}
-                      >
-                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                            <div className="min-w-0">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span
-                                  className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-black uppercase tracking-wide ${actionStyle.badgeClassName}`}
-                                >
-                                  {actionStyle.label}
-                                </span>
+                        <div
+                          className={`relative z-10 flex h-11 w-11 items-center justify-center rounded-full border text-lg font-black ${actionStyle.iconClassName}`}
+                        >
+                          {actionStyle.icon}
+                        </div>
 
-                                <span className="inline-flex rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-500">
-                                  {getEntityLabel(
-                                    activity.entity_type,
-                                  )}
-                                </span>
+                        <div
+                          className={`min-w-0 ${
+                            isLast ? "pb-0" : "pb-6"
+                          }`}
+                        >
+                          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                              <div className="min-w-0">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span
+                                    className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-black uppercase tracking-wide ${actionStyle.badgeClassName}`}
+                                  >
+                                    {
+                                      actionStyle.label
+                                    }
+                                  </span>
+
+                                  <span className="inline-flex rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-500">
+                                    {getEntityLabel(
+                                      activity.entity_type,
+                                    )}
+                                  </span>
+                                </div>
+
+                                <p className="mt-3 break-words text-sm font-bold leading-6 text-slate-900">
+                                  {
+                                    activity.description
+                                  }
+                                </p>
+
+                                <p className="mt-2 text-xs text-slate-500">
+                                  By{" "}
+                                  <span className="font-bold text-slate-700">
+                                    {activity.actor_name ||
+                                      "System"}
+                                  </span>
+                                </p>
                               </div>
 
-                              <p className="mt-3 break-words text-sm font-bold leading-6 text-slate-900">
-                                {activity.description}
-                              </p>
-
-                              <p className="mt-2 text-xs text-slate-500">
-                                By{" "}
-                                <span className="font-bold text-slate-700">
-                                  {activity.actor_name || "System"}
-                                </span>
-                              </p>
+                              <time
+                                dateTime={
+                                  activity.created_at
+                                }
+                                title={formatFullDate(
+                                  activity.created_at,
+                                )}
+                                className="shrink-0 text-xs font-bold text-slate-400"
+                              >
+                                {formatActivityTime(
+                                  activity.created_at,
+                                )}
+                              </time>
                             </div>
-
-                            <time
-                              dateTime={activity.created_at}
-                              title={formatFullDate(
-                                activity.created_at,
-                              )}
-                              className="shrink-0 text-xs font-bold text-slate-400"
-                            >
-                              {formatActivityTime(
-                                activity.created_at,
-                              )}
-                            </time>
                           </div>
                         </div>
-                      </div>
-                    </article>
-                  );
-                })}
+                      </article>
+                    );
+                  },
+                )}
               </div>
             </section>
           ))}

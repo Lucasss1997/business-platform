@@ -1,5 +1,11 @@
 export { logActivity } from "@/platform/activity/log";
 
+export {
+  getCompanyActivity,
+  getRecentActivity,
+  getUserActivity,
+} from "@/platform/activity/queries";
+
 export type {
   ActivityAction,
   ActivityEntityType,
