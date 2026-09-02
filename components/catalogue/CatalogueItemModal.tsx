@@ -221,26 +221,26 @@ export default function CatalogueItemModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="catalogue-modal-title"
-        className="max-h-[92vh] w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+        className="max-h-[92vh] w-full max-w-4xl overflow-hidden rounded-2xl bg-[var(--surface)] shadow-2xl"
       >
         <form
           onSubmit={handleSubmit}
           className="flex max-h-[92vh] flex-col"
         >
-          <header className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
+          <header className="flex items-start justify-between border-b border-[var(--border)] px-6 py-5">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
                 Catalogue
               </p>
 
               <h2
                 id="catalogue-modal-title"
-                className="mt-1 text-xl font-bold text-slate-900"
+                className="mt-1 text-xl font-bold text-[var(--text-primary)]"
               >
                 {item ? "Edit catalogue item" : "New catalogue item"}
               </h2>
 
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-[var(--text-secondary)]">
                 Store reusable product, service and pricing
                 information.
               </p>
@@ -251,7 +251,7 @@ export default function CatalogueItemModal({
               onClick={handleClose}
               disabled={saving}
               aria-label="Close"
-              className="rounded-lg px-3 py-2 text-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed"
+              className="rounded-lg px-3 py-2 text-xl text-[var(--text-secondary)] transition hover:bg-[var(--surface-soft)] hover:text-[var(--text-primary)] disabled:cursor-not-allowed"
             >
               ×
             </button>
@@ -423,7 +423,7 @@ export default function CatalogueItemModal({
                         className={`${inputClasses} pr-10`}
                       />
 
-                      <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-sm text-slate-500">
+                      <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-sm text-[var(--text-secondary)]">
                         %
                       </span>
                     </div>
@@ -483,12 +483,12 @@ export default function CatalogueItemModal({
             </div>
           </div>
 
-          <footer className="flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50 px-6 py-4 sm:flex-row sm:justify-end">
+          <footer className="flex flex-col-reverse gap-3 border-t border-[var(--border)] bg-[var(--surface-soft)] px-6 py-4 sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={handleClose}
               disabled={saving}
-              className="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition hover:bg-[var(--surface-soft)] disabled:cursor-not-allowed disabled:opacity-60"
             >
               Cancel
             </button>
@@ -496,7 +496,7 @@ export default function CatalogueItemModal({
             <button
               type="submit"
               disabled={saving}
-              className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+              className="rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               {saving
                 ? "Saving…"
@@ -512,7 +512,7 @@ export default function CatalogueItemModal({
 }
 
 const inputClasses =
-  "w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-4 focus:ring-slate-100";
+  "w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm text-[var(--text-primary)] outline-none transition placeholder:text-[var(--text-secondary)] focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10";
 
 function Field({
   label,
@@ -525,7 +525,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-sm font-semibold text-slate-700">
+      <span className="mb-1.5 block text-sm font-semibold text-[var(--text-primary)]">
         {label}
 
         {required && (
@@ -549,11 +549,11 @@ function SectionHeading({
 }) {
   return (
     <div>
-      <h3 className="text-base font-bold text-slate-900">
+      <h3 className="text-base font-bold text-[var(--text-primary)]">
         {title}
       </h3>
 
-      <p className="mt-1 text-sm text-slate-500">
+      <p className="mt-1 text-sm text-[var(--text-secondary)]">
         {description}
       </p>
     </div>
@@ -569,7 +569,7 @@ function MoneyInput({
 }) {
   return (
     <div className="relative">
-      <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-sm text-slate-500">
+      <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-sm text-[var(--text-secondary)]">
         £
       </span>
 
@@ -593,12 +593,12 @@ function PricingMetric({
   value: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-4 py-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
         {label}
       </p>
 
-      <p className="mt-1 text-lg font-bold text-slate-900">
+      <p className="mt-1 text-lg font-bold text-[var(--text-primary)]">
         {value}
       </p>
     </div>
@@ -617,20 +617,20 @@ function ToggleCard({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 p-4 transition hover:bg-slate-50">
+    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--border)] p-4 transition hover:bg-[var(--surface-soft)]">
       <input
         type="checkbox"
         checked={checked}
         onChange={(event) => onChange(event.target.checked)}
-        className="mt-1 h-4 w-4 rounded border-slate-300"
+        className="mt-1 h-4 w-4 rounded border-[var(--border)]"
       />
 
       <span>
-        <span className="block text-sm font-bold text-slate-900">
+        <span className="block text-sm font-bold text-[var(--text-primary)]">
           {label}
         </span>
 
-        <span className="mt-1 block text-xs leading-5 text-slate-500">
+        <span className="mt-1 block text-xs leading-5 text-[var(--text-secondary)]">
           {description}
         </span>
       </span>

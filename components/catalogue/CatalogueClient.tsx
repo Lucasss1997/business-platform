@@ -365,15 +365,15 @@ export default function CatalogueClient() {
           />
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 p-5 lg:p-6">
+        <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-sm">
+          <div className="border-b border-[var(--border)] p-5 lg:p-6">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div>
-                <h2 className="text-lg font-bold text-slate-900">
+                <h2 className="text-lg font-bold text-[var(--text-primary)]">
                   Catalogue items
                 </h2>
 
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-[var(--text-secondary)]">
                   Search and manage the reusable items held in
                   your commercial catalogue.
                 </p>
@@ -384,7 +384,7 @@ export default function CatalogueClient() {
                   type="button"
                   disabled
                   title="Catalogue import will be added in Sprint 13.4"
-                  className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-500 disabled:cursor-not-allowed disabled:bg-slate-50"
+                  className="rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-semibold text-[var(--text-secondary)] disabled:cursor-not-allowed disabled:bg-[var(--surface-soft)]"
                 >
                   Import
                 </button>
@@ -393,7 +393,7 @@ export default function CatalogueClient() {
                   type="button"
                   disabled
                   title="Catalogue export will be added in Sprint 13.4"
-                  className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-500 disabled:cursor-not-allowed disabled:bg-slate-50"
+                  className="rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-semibold text-[var(--text-secondary)] disabled:cursor-not-allowed disabled:bg-[var(--surface-soft)]"
                 >
                   Export
                 </button>
@@ -401,7 +401,7 @@ export default function CatalogueClient() {
                 <button
                   type="button"
                   onClick={openCreateModal}
-                  className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-700"
+                  className="rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-95"
                 >
                   + New item
                 </button>
@@ -421,7 +421,7 @@ export default function CatalogueClient() {
                     setSearch(event.target.value)
                   }
                   placeholder="Search by SKU, name, manufacturer or category..."
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-4 focus:ring-slate-100"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm text-[var(--text-primary)] outline-none transition placeholder:text-[var(--text-secondary)] focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10"
                 />
               </label>
 
@@ -437,7 +437,7 @@ export default function CatalogueClient() {
                       event.target.value as TypeFilter,
                     )
                   }
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-4 focus:ring-slate-100"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10"
                 >
                   <option value="all">
                     All item types
@@ -463,7 +463,7 @@ export default function CatalogueClient() {
                       event.target.value as StatusFilter,
                     )
                   }
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-4 focus:ring-slate-100"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10"
                 >
                   <option value="active">Active items</option>
                   <option value="archived">
@@ -473,7 +473,7 @@ export default function CatalogueClient() {
                 </select>
               </label>
 
-              <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-slate-300 px-4 text-sm font-semibold text-slate-700">
+              <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold text-[var(--text-primary)]">
                 <input
                   type="checkbox"
                   checked={favouritesOnly}
@@ -491,7 +491,7 @@ export default function CatalogueClient() {
 
             {filtersActive && (
               <div className="mt-4 flex items-center justify-between gap-4">
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-[var(--text-secondary)]">
                   Showing {filteredItems.length} of{" "}
                   {items.length} items
                 </p>
@@ -499,7 +499,7 @@ export default function CatalogueClient() {
                 <button
                   type="button"
                   onClick={resetFilters}
-                  className="text-sm font-semibold text-slate-600 hover:text-slate-900"
+                  className="text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 >
                   Clear filters
                 </button>
@@ -582,8 +582,8 @@ function CatalogueTable({
 }) {
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-slate-200">
-        <thead className="bg-slate-50">
+      <table className="min-w-full divide-y divide-[var(--border)]">
+        <thead className="bg-[var(--surface-soft)]">
           <tr>
             <TableHeading>Item</TableHeading>
             <TableHeading>Type</TableHeading>
@@ -598,7 +598,7 @@ function CatalogueTable({
           </tr>
         </thead>
 
-        <tbody className="divide-y divide-slate-100 bg-white">
+        <tbody className="divide-y divide-[var(--border)] bg-[var(--surface)]">
           {items.map((item) => {
             const pricing = calculateMargin(
               Number(item.cost_price || 0),
@@ -610,7 +610,7 @@ function CatalogueTable({
             return (
               <tr
                 key={item.id}
-                className="transition hover:bg-slate-50"
+                className="transition hover:bg-[var(--surface-soft)]"
               >
                 <td className="min-w-72 px-5 py-4 lg:px-6">
                   <div className="flex items-start gap-3">
@@ -634,15 +634,15 @@ function CatalogueTable({
                           : "text-slate-300 hover:text-amber-500"
                       }`}
                     >
-                      {item.favourite ? "★" : "☆"}
+                      {item.favourite ? "?" : "?"}
                     </button>
 
                     <div>
-                      <p className="font-semibold text-slate-900">
+                      <p className="font-semibold text-[var(--text-primary)]">
                         {item.name}
                       </p>
 
-                      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500">
+                      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[var(--text-secondary)]">
                         <span>
                           SKU: {item.sku || "Not assigned"}
                         </span>
@@ -655,7 +655,7 @@ function CatalogueTable({
                       </div>
 
                       {item.description && (
-                        <p className="mt-2 max-w-xl text-sm text-slate-500">
+                        <p className="mt-2 max-w-xl text-sm text-[var(--text-secondary)]">
                           {item.description}
                         </p>
                       )}
@@ -667,15 +667,15 @@ function CatalogueTable({
                   <TypeBadge type={item.item_type} />
                 </td>
 
-                <td className="whitespace-nowrap px-5 py-4 text-sm text-slate-600 lg:px-6">
+                <td className="whitespace-nowrap px-5 py-4 text-sm text-[var(--text-secondary)] lg:px-6">
                   {item.category}
                 </td>
 
-                <td className="whitespace-nowrap px-5 py-4 text-right text-sm text-slate-600 lg:px-6">
+                <td className="whitespace-nowrap px-5 py-4 text-right text-sm text-[var(--text-secondary)] lg:px-6">
                   {formatMoney(item.cost_price)}
                 </td>
 
-                <td className="whitespace-nowrap px-5 py-4 text-right text-sm font-semibold text-slate-900 lg:px-6">
+                <td className="whitespace-nowrap px-5 py-4 text-right text-sm font-semibold text-[var(--text-primary)] lg:px-6">
                   {formatMoney(item.sell_price)}
                 </td>
 
@@ -692,7 +692,7 @@ function CatalogueTable({
                     {formatPercentage(pricing.margin)}%
                   </span>
 
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-1 text-xs text-[var(--text-secondary)]">
                     {formatMoney(pricing.profit)} profit
                   </p>
                 </td>
@@ -706,7 +706,7 @@ function CatalogueTable({
                     <button
                       type="button"
                       onClick={() => onEdit(item)}
-                      className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                      className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--text-primary)] transition hover:border-[var(--accent)] hover:bg-[var(--surface-soft)]"
                     >
                       Edit
                     </button>
@@ -714,7 +714,7 @@ function CatalogueTable({
                     <button
                       type="button"
                       onClick={() => onDuplicate(item)}
-                      className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                      className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--text-primary)] transition hover:border-[var(--accent)] hover:bg-[var(--surface-soft)]"
                     >
                       Duplicate
                     </button>
@@ -787,16 +787,16 @@ function MetricCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-semibold text-slate-500">
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
+      <p className="text-sm font-semibold text-[var(--text-secondary)]">
         {label}
       </p>
 
-      <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+      <p className="mt-2 text-3xl font-bold tracking-tight text-[var(--text-primary)]">
         {value}
       </p>
 
-      <p className="mt-2 text-xs text-slate-500">
+      <p className="mt-2 text-xs text-[var(--text-secondary)]">
         {detail}
       </p>
     </div>
@@ -813,7 +813,7 @@ function TableHeading({
   return (
     <th
       scope="col"
-      className={`px-5 py-3 text-xs font-bold uppercase tracking-wide text-slate-500 lg:px-6 ${
+      className={`px-5 py-3 text-xs font-bold uppercase tracking-wide text-[var(--text-secondary)] lg:px-6 ${
         align === "right" ? "text-right" : "text-left"
       }`}
     >
@@ -828,7 +828,7 @@ function TypeBadge({
   type: CatalogueItemType;
 }) {
   return (
-    <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
+    <span className="inline-flex rounded-full bg-[var(--surface-soft)] px-2.5 py-1 text-xs font-semibold text-[var(--text-primary)]">
       {TYPE_LABELS[type]}
     </span>
   );
@@ -844,7 +844,7 @@ function StatusBadge({
       className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
         active
           ? "bg-emerald-50 text-emerald-700"
-          : "bg-slate-100 text-slate-600"
+          : "bg-[var(--surface-soft)] text-[var(--text-secondary)]"
       }`}
     >
       {active ? "Active" : "Archived"}
@@ -855,10 +855,10 @@ function StatusBadge({
 function LoadingState() {
   return (
     <div className="p-10 text-center">
-      <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-slate-700" />
+      <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--accent)]" />
 
-      <p className="mt-4 text-sm font-medium text-slate-600">
-        Loading catalogue…
+      <p className="mt-4 text-sm font-medium text-[var(--text-secondary)]">
+        Loading catalogue...
       </p>
     </div>
   );
@@ -875,17 +875,17 @@ function EmptyState({
 }) {
   return (
     <div className="px-6 py-16 text-center">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-xl">
-        ◫
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--surface-soft)] text-xl">
+        ?
       </div>
 
-      <h3 className="mt-4 text-base font-bold text-slate-900">
+      <h3 className="mt-4 text-base font-bold text-[var(--text-primary)]">
         {hasItems
           ? "No catalogue items match these filters"
           : "Your catalogue is empty"}
       </h3>
 
-      <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
+      <p className="mx-auto mt-2 max-w-md text-sm text-[var(--text-secondary)]">
         {hasItems
           ? "Clear or adjust the current filters to display more catalogue items."
           : "Add your first product, service, labour charge, subscription or other reusable item."}
@@ -896,7 +896,7 @@ function EmptyState({
           <button
             type="button"
             onClick={onReset}
-            className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            className="rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-soft)]"
           >
             Clear filters
           </button>
@@ -904,7 +904,7 @@ function EmptyState({
           <button
             type="button"
             onClick={onCreate}
-            className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-700"
+            className="rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white hover:brightness-95"
           >
             + New item
           </button>
@@ -913,3 +913,4 @@ function EmptyState({
     </div>
   );
 }
+
