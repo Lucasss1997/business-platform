@@ -83,17 +83,17 @@ export default function TaskModal({
         }
       }}
     >
-      <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl">
-        <div className="flex items-start justify-between gap-4 border-b border-slate-100 p-6">
+      <div className="w-full max-w-xl rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-2xl">
+        <div className="flex items-start justify-between gap-4 border-b border-[var(--border)] p-6">
           <div>
             <h2
               id="task-modal-title"
-              className="text-xl font-black text-slate-900"
+              className="text-xl font-black text-[var(--text-primary)]"
             >
               {task ? "Edit task" : "Add task"}
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
               {task
                 ? "Update the task details and deadline."
                 : "Create a follow-up task for this company."}
@@ -104,10 +104,10 @@ export default function TaskModal({
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-xl text-[var(--text-secondary)] transition hover:bg-[var(--surface-soft)] hover:text-[var(--text-primary)] disabled:opacity-50"
             aria-label="Close task form"
           >
-            ×
+            X
           </button>
         </div>
 
@@ -126,7 +126,7 @@ export default function TaskModal({
                 placeholder="For example, call customer"
                 autoFocus
                 disabled={saving}
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-100 disabled:bg-slate-50"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition placeholder:text-[var(--text-secondary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 disabled:bg-[var(--surface-soft)]"
               />
             </FormField>
 
@@ -142,7 +142,7 @@ export default function TaskModal({
                 placeholder="Add any notes or instructions..."
                 rows={4}
                 disabled={saving}
-                className="w-full resize-y rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-100 disabled:bg-slate-50"
+                className="w-full resize-y rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition placeholder:text-[var(--text-secondary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 disabled:bg-[var(--surface-soft)]"
               />
             </FormField>
 
@@ -158,7 +158,7 @@ export default function TaskModal({
                     }))
                   }
                   disabled={saving}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-100 disabled:bg-slate-50"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 disabled:bg-[var(--surface-soft)]"
                 />
               </FormField>
 
@@ -172,7 +172,7 @@ export default function TaskModal({
                     }))
                   }
                   disabled={saving}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-100 disabled:bg-slate-50"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 disabled:bg-[var(--surface-soft)]"
                 >
                   {taskPriorities.map((priority) => (
                     <option key={priority} value={priority}>
@@ -195,7 +195,7 @@ export default function TaskModal({
                 }
                 placeholder="For example, Lucas"
                 disabled={saving}
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-100 disabled:bg-slate-50"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition placeholder:text-[var(--text-secondary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 disabled:bg-[var(--surface-soft)]"
               />
             </FormField>
 
@@ -206,12 +206,12 @@ export default function TaskModal({
             ) : null}
           </div>
 
-          <div className="flex justify-end gap-3 border-t border-slate-100 p-6">
+          <div className="flex justify-end gap-3 border-t border-[var(--border)] bg-[var(--surface-soft)] p-6">
             <button
               type="button"
               onClick={onClose}
               disabled={saving}
-              className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-bold text-[var(--text-primary)] transition hover:bg-[var(--surface)] disabled:cursor-not-allowed disabled:opacity-50"
             >
               Cancel
             </button>
@@ -219,7 +219,7 @@ export default function TaskModal({
             <button
               type="submit"
               disabled={saving}
-              className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {saving
                 ? "Saving..."
@@ -245,7 +245,7 @@ function FormField({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-bold text-slate-700">
+      <span className="mb-2 block text-sm font-bold text-[var(--text-primary)]">
         {label}
 
         {required ? (

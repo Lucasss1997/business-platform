@@ -293,14 +293,14 @@ export default function GlobalTaskList() {
         />
       </div>
 
-      <section className="mt-6 rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm">
+      <section className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <h2 className="text-lg font-black text-slate-900">
+            <h2 className="text-lg font-black text-[var(--text-primary)]">
               All tasks
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
               Review and manage tasks across every company.
             </p>
           </div>
@@ -316,7 +316,7 @@ export default function GlobalTaskList() {
                   setSearch(event.target.value)
                 }
                 placeholder="Search tasks or companies"
-                className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-100 sm:w-64"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm text-[var(--text-primary)] outline-none transition placeholder:text-[var(--text-secondary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 sm:w-64"
               />
             </label>
 
@@ -328,7 +328,7 @@ export default function GlobalTaskList() {
                 onChange={(event) =>
                   setFilter(event.target.value as TaskFilter)
                 }
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-100 sm:w-44"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm font-bold text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10 sm:w-44"
               >
                 <option value="All">All tasks</option>
                 <option value="Overdue">Overdue</option>
@@ -358,12 +358,12 @@ export default function GlobalTaskList() {
         ) : null}
 
         {loading ? (
-          <div className="mt-6 rounded-xl bg-slate-50 p-10 text-center">
-            <p className="font-bold text-slate-700">
+          <div className="mt-6 rounded-xl bg-[var(--surface-soft)] p-10 text-center">
+            <p className="font-bold text-[var(--text-primary)]">
               Loading tasks
             </p>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
               Reading tasks and company details from Supabase.
             </p>
           </div>
@@ -469,12 +469,12 @@ function SummaryCard({
       className={`rounded-2xl border p-5 shadow-sm ${
         urgent
           ? "border-red-200 bg-red-50"
-          : "border-[var(--border)] bg-white"
+          : "border-[var(--border)] bg-[var(--surface)]"
       }`}
     >
       <p
         className={`text-xs font-black uppercase tracking-[0.18em] ${
-          urgent ? "text-red-600" : "text-slate-500"
+          urgent ? "text-red-600" : "text-[var(--text-secondary)]"
         }`}
       >
         {label}
@@ -482,7 +482,7 @@ function SummaryCard({
 
       <p
         className={`mt-3 text-3xl font-black ${
-          urgent ? "text-red-700" : "text-slate-900"
+          urgent ? "text-red-700" : "text-[var(--text-primary)]"
         }`}
       >
         {value}
@@ -490,7 +490,7 @@ function SummaryCard({
 
       <p
         className={`mt-1 text-sm ${
-          urgent ? "text-red-600" : "text-slate-500"
+          urgent ? "text-red-600" : "text-[var(--text-secondary)]"
         }`}
       >
         {description}
@@ -539,18 +539,18 @@ function TaskGroup({
 
   if (collapsible) {
     return (
-      <details className="rounded-2xl border border-slate-200">
+      <details className="rounded-2xl border border-[var(--border)] bg-[var(--surface)]">
         <summary className="cursor-pointer select-none px-5 py-4">
-          <span className="font-black text-slate-900">
+          <span className="font-black text-[var(--text-primary)]">
             {title} ({tasks.length})
           </span>
 
-          <span className="ml-2 text-sm text-slate-500">
+          <span className="ml-2 text-sm text-[var(--text-secondary)]">
             {description}
           </span>
         </summary>
 
-        <div className="border-t border-slate-100 p-4">
+        <div className="border-t border-[var(--border)] p-4">
           {content}
         </div>
       </details>
@@ -561,16 +561,16 @@ function TaskGroup({
     <section>
       <div className="mb-3 flex items-end justify-between gap-4">
         <div>
-          <h3 className="text-sm font-black uppercase tracking-wide text-slate-700">
+          <h3 className="text-sm font-black uppercase tracking-wide text-[var(--text-primary)]">
             {title}
           </h3>
 
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
             {description}
           </p>
         </div>
 
-        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
+        <span className="rounded-full bg-[var(--surface-soft)] px-3 py-1 text-xs font-black text-[var(--text-secondary)]">
           {tasks.length}
         </span>
       </div>
@@ -588,16 +588,16 @@ function EmptyState({
   description: string;
 }) {
   return (
-    <div className="mt-6 rounded-2xl border border-dashed border-slate-300 p-10 text-center">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-xl">
-        ✓
+    <div className="mt-6 rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-soft)] p-10 text-center">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--surface)] text-xl">
+        +
       </div>
 
-      <h3 className="mt-4 text-lg font-black text-slate-900">
+      <h3 className="mt-4 text-lg font-black text-[var(--text-primary)]">
         {title}
       </h3>
 
-      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--text-secondary)]">
         {description}
       </p>
     </div>

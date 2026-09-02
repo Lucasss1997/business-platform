@@ -30,10 +30,10 @@ export default function TaskCard({
     <article
       className={`rounded-2xl border p-5 transition ${
         completed
-          ? "border-slate-200 bg-slate-50"
+          ? "border-[var(--border)] bg-[var(--surface-soft)]"
           : overdue
-            ? "border-red-200 bg-red-50/40"
-            : "border-slate-200 bg-white"
+            ? "border-red-400/30 bg-red-500/5"
+            : "border-[var(--border)] bg-[var(--surface)]"
       }`}
     >
       <div className="flex items-start gap-4">
@@ -49,10 +49,10 @@ export default function TaskCard({
           className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 text-xs font-black transition disabled:cursor-not-allowed disabled:opacity-50 ${
             completed
               ? "border-emerald-600 bg-emerald-600 text-white"
-              : "border-slate-300 bg-white text-transparent hover:border-emerald-600"
+              : "border-[var(--border)] bg-[var(--surface)] text-transparent hover:border-emerald-500"
           }`}
         >
-          ✓
+          OK
         </button>
 
         <div className="min-w-0 flex-1">
@@ -70,8 +70,8 @@ export default function TaskCard({
               <h3
                 className={`break-words text-base font-black ${
                   completed
-                    ? "text-slate-500 line-through"
-                    : "text-slate-900"
+                    ? "text-[var(--text-secondary)] line-through"
+                    : "text-[var(--text-primary)]"
                 }`}
               >
                 {task.title}
@@ -81,8 +81,8 @@ export default function TaskCard({
                 <p
                   className={`mt-2 whitespace-pre-wrap text-sm leading-6 ${
                     completed
-                      ? "text-slate-400"
-                      : "text-slate-600"
+                      ? "text-[var(--text-secondary)] opacity-70"
+                      : "text-[var(--text-secondary)]"
                   }`}
                 >
                   {task.description}
@@ -100,21 +100,21 @@ export default function TaskCard({
                   overdue && !completed
                     ? "bg-red-100 text-red-700"
                     : completed
-                      ? "bg-slate-200 text-slate-500"
+                      ? "bg-[var(--surface-soft)] text-[var(--text-secondary)]"
                       : "bg-blue-50 text-blue-700"
                 }`}
               >
-                {overdue && !completed ? "Overdue · " : ""}
+                {overdue && !completed ? "Overdue - " : ""}
                 {dueLabel}
               </span>
             ) : (
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">
+              <span className="rounded-full bg-[var(--surface-soft)] px-3 py-1 text-xs font-bold text-[var(--text-secondary)]">
                 No due date
               </span>
             )}
 
             {task.assigned_to ? (
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+              <span className="rounded-full bg-[var(--surface-soft)] px-3 py-1 text-xs font-bold text-[var(--text-secondary)]">
                 Assigned to {task.assigned_to}
               </span>
             ) : null}
@@ -126,12 +126,12 @@ export default function TaskCard({
             ) : null}
           </div>
 
-          <div className="mt-5 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+          <div className="mt-5 flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
             <button
               type="button"
               onClick={() => onEdit(task)}
               disabled={busy}
-              className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition hover:bg-[var(--surface-soft)] disabled:cursor-not-allowed disabled:opacity-50"
             >
               Edit
             </button>
@@ -140,7 +140,7 @@ export default function TaskCard({
               type="button"
               onClick={() => onToggleComplete(task)}
               disabled={busy}
-              className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition hover:bg-[var(--surface-soft)] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {completed ? "Reopen" : "Mark complete"}
             </button>
@@ -165,7 +165,7 @@ function PriorityBadge({ priority }: { priority: string }) {
     priority === "High"
       ? "bg-red-100 text-red-700"
       : priority === "Low"
-        ? "bg-slate-100 text-slate-600"
+        ? "bg-[var(--surface-soft)] text-[var(--text-secondary)]"
         : "bg-amber-100 text-amber-700";
 
   return (

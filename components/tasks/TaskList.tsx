@@ -171,14 +171,14 @@ export default function TaskList({
 
   return (
     <>
-      <section className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm">
+      <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-lg font-black text-slate-900">
+            <h2 className="text-lg font-black text-[var(--text-primary)]">
               Tasks
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
               Manage follow-ups, deadlines and actions for this company.
             </p>
           </div>
@@ -186,7 +186,7 @@ export default function TaskList({
           <button
             type="button"
             onClick={openCreateModal}
-            className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-700"
+            className="inline-flex items-center justify-center rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
           >
             + Add task
           </button>
@@ -209,28 +209,28 @@ export default function TaskList({
         ) : null}
 
         {loading ? (
-          <div className="mt-6 rounded-xl bg-slate-50 p-8 text-center">
-            <p className="font-bold text-slate-700">
+          <div className="mt-6 rounded-xl bg-[var(--surface-soft)] p-8 text-center">
+            <p className="font-bold text-[var(--text-primary)]">
               Loading tasks
             </p>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
               Reading the latest tasks from Supabase.
             </p>
           </div>
         ) : null}
 
         {!loading && tasks.length === 0 ? (
-          <div className="mt-6 rounded-2xl border border-dashed border-slate-300 p-10 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-xl">
-              ✓
+          <div className="mt-6 rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-soft)] p-10 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--surface)] text-xl">
+              +
             </div>
 
-            <h3 className="mt-4 text-lg font-black text-slate-900">
+            <h3 className="mt-4 text-lg font-black text-[var(--text-primary)]">
               No tasks yet
             </h3>
 
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--text-secondary)]">
               Add the first task to record a follow-up, deadline or
               action for this company.
             </p>
@@ -238,7 +238,7 @@ export default function TaskList({
             <button
               type="button"
               onClick={openCreateModal}
-              className="mt-5 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-700"
+              className="mt-5 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
             >
               + Add task
             </button>
@@ -248,11 +248,11 @@ export default function TaskList({
         {!loading && openTasks.length > 0 ? (
           <div className="mt-6">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-black uppercase tracking-wide text-slate-500">
+              <h3 className="text-sm font-black uppercase tracking-wide text-[var(--text-secondary)]">
                 Open tasks
               </h3>
 
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
+              <span className="rounded-full bg-[var(--surface-soft)] px-3 py-1 text-xs font-black text-[var(--text-secondary)]">
                 {openTasks.length}
               </span>
             </div>
@@ -273,12 +273,12 @@ export default function TaskList({
         ) : null}
 
         {!loading && completedTasks.length > 0 ? (
-          <details className="mt-7 rounded-xl border border-slate-200">
-            <summary className="cursor-pointer select-none px-5 py-4 text-sm font-black text-slate-700">
+          <details className="mt-7 rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+            <summary className="cursor-pointer select-none px-5 py-4 text-sm font-black text-[var(--text-primary)]">
               Completed tasks ({completedTasks.length})
             </summary>
 
-            <div className="space-y-3 border-t border-slate-100 p-4">
+            <div className="space-y-3 border-t border-[var(--border)] p-4">
               {completedTasks.map((task) => (
                 <TaskCard
                   key={task.id}
