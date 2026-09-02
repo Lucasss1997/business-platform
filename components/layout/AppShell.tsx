@@ -6,9 +6,12 @@ type AppShellProps = { children: ReactNode };
 export default function AppShell({ children }: AppShellProps) {
   return (
     <main className="min-h-screen bg-[var(--surface-muted)] text-[var(--text-primary)]">
-      <div className="flex min-h-screen">
+      <div className="min-h-screen lg:flex">
         <Sidebar />
-        <div className="min-w-0 flex-1">{children}</div>
+
+        <div className="min-w-0 w-full flex-1">
+          {children}
+        </div>
       </div>
     </main>
   );
