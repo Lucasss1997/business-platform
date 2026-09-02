@@ -589,10 +589,10 @@ export default function SalesPipelineClient() {
 
   if (loading) {
     return (
-      <section className="rounded-2xl border border-[var(--border)] bg-white p-10 text-center shadow-sm">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900" />
+      <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-10 text-center shadow-sm">
+        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--accent)]" />
 
-        <p className="mt-4 text-sm font-semibold text-slate-600">
+        <p className="mt-4 text-sm font-semibold text-[var(--text-secondary)]">
           Loading sales pipeline...
         </p>
       </section>
@@ -601,14 +601,14 @@ export default function SalesPipelineClient() {
 
   return (
     <>
-      <section className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm">
+      <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">
               Sales pipeline
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
               Drag opportunities between columns to update their sales
               stage.
             </p>
@@ -618,7 +618,7 @@ export default function SalesPipelineClient() {
             type="button"
             onClick={openCreateModal}
             disabled={companies.length === 0}
-            className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center justify-center rounded-xl bg-[var(--accent)] px-4 py-3 text-sm font-bold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
           >
             + Add opportunity
           </button>
@@ -646,13 +646,13 @@ export default function SalesPipelineClient() {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search opportunities, companies or owners..."
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
+            className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition placeholder:text-[var(--text-secondary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10"
           />
 
           <select
             value={stageFilter}
             onChange={(event) => setStageFilter(event.target.value)}
-            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
+            className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/10"
           >
             <option value="All">All stages</option>
 
@@ -665,12 +665,12 @@ export default function SalesPipelineClient() {
         </div>
 
         {opportunities.length === 0 ? (
-          <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white text-xl shadow-sm">
-              ◇
+          <div className="mt-6 rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-soft)] p-10 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--surface)] text-xl shadow-sm">
+              ?
             </div>
 
-            <h3 className="mt-4 text-lg font-bold text-slate-900">
+            <h3 className="mt-4 text-lg font-bold text-[var(--text-primary)]">
               No opportunities yet
             </h3>
 
@@ -683,7 +683,7 @@ export default function SalesPipelineClient() {
               <button
                 type="button"
                 onClick={openCreateModal}
-                className="mt-5 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-700"
+                className="mt-5 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-95"
               >
                 + Add opportunity
               </button>
@@ -796,20 +796,20 @@ function PipelineColumn({
       onDrop={(event) => onDrop(event, stage)}
       className={`flex min-h-[460px] flex-col rounded-2xl border transition ${
         dragActive
-          ? "border-blue-400 bg-blue-50 ring-2 ring-blue-200"
-          : "border-slate-200 bg-slate-50"
+          ? "border-[var(--accent)] bg-[var(--surface-soft)] ring-2 ring-[var(--accent)]/20"
+          : "border-[var(--border)] bg-[var(--surface-soft)]"
       }`}
     >
-      <header className="border-b border-slate-200 p-4">
+      <header className="border-b border-[var(--border)] p-4">
         <div className="flex items-center justify-between gap-3">
           <StageBadge stage={stage} />
 
-          <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-white px-2 text-xs font-black text-slate-700 shadow-sm">
+          <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-[var(--surface)] px-2 text-xs font-black text-[var(--text-primary)] shadow-sm">
             {opportunities.length}
           </span>
         </div>
 
-        <p className="mt-3 text-sm font-black text-slate-900">
+        <p className="mt-3 text-sm font-black text-[var(--text-primary)]">
           {formatMoney(totalValue)}
         </p>
       </header>
@@ -819,11 +819,11 @@ function PipelineColumn({
           <div
             className={`rounded-xl border border-dashed px-3 py-8 text-center transition ${
               dragActive
-                ? "border-blue-400 bg-blue-100/60"
-                : "border-slate-300 bg-white/60"
+                ? "border-[var(--accent)] bg-[var(--accent)]/10"
+                : "border-[var(--border)] bg-[var(--surface)]/60"
             }`}
           >
-            <p className="text-xs font-semibold text-slate-400">
+            <p className="text-xs font-semibold text-[var(--text-secondary)]">
               {dragActive ? "Drop opportunity here" : "No opportunities"}
             </p>
           </div>
@@ -881,10 +881,10 @@ function PipelineCard({
       draggable={!deleting && !moving}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
-      className={`cursor-grab rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition active:cursor-grabbing ${
+      className={`cursor-grab rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm transition active:cursor-grabbing ${
         dragging
           ? "scale-95 opacity-40"
-          : "hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+          : "hover:-translate-y-0.5 hover:border-[var(--accent)] hover:shadow-md"
       } ${moving ? "pointer-events-none opacity-60" : ""}`}
     >
       <button
@@ -897,42 +897,42 @@ function PipelineCard({
           {opportunity.title || "Untitled opportunity"}
         </h3>
 
-        <p className="mt-2 text-lg font-black text-slate-900">
+        <p className="mt-2 text-lg font-black text-[var(--text-primary)]">
           {formatMoney(opportunity.value)}
         </p>
 
         <div className="mt-4 space-y-2 text-xs">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-slate-400">Probability</span>
+            <span className="text-[var(--text-secondary)]">Probability</span>
 
-            <span className="font-bold text-slate-700">
+            <span className="font-bold text-[var(--text-primary)]">
               {Number(opportunity.probability || 0)}%
             </span>
           </div>
 
           <div className="flex items-center justify-between gap-3">
-            <span className="text-slate-400">Close</span>
+            <span className="text-[var(--text-secondary)]">Close</span>
 
-            <span className="text-right font-bold text-slate-700">
+            <span className="text-right font-bold text-[var(--text-primary)]">
               {formatDate(opportunity.expected_close)}
             </span>
           </div>
 
           <div className="flex items-center justify-between gap-3">
-            <span className="text-slate-400">Owner</span>
+            <span className="text-[var(--text-secondary)]">Owner</span>
 
-            <span className="truncate text-right font-bold text-slate-700">
+            <span className="truncate text-right font-bold text-[var(--text-primary)]">
               {opportunity.assigned_to || "Unassigned"}
             </span>
           </div>
         </div>
       </button>
 
-      <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+      <div className="mt-4 flex items-center justify-between gap-3 border-t border-[var(--border)] pt-3">
         <Link
           href={companyHref}
           draggable={false}
-          className="min-w-0 truncate text-xs font-bold text-blue-700 hover:underline"
+          className="min-w-0 truncate text-xs font-bold text-[var(--accent)] hover:underline"
         >
           {companyName}
         </Link>
@@ -953,3 +953,4 @@ function PipelineCard({
     </article>
   );
 }
+

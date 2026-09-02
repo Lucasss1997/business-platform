@@ -45,11 +45,11 @@ export default function OpportunityCard({
   const weightedValue = value * (probability / 100);
 
   return (
-    <article className="rounded-2xl border border-slate-200 p-5 transition hover:border-slate-300 hover:shadow-sm">
+    <article className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 transition hover:border-[var(--accent)] hover:shadow-sm">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-3">
-            <h3 className="break-words text-base font-black text-slate-900">
+            <h3 className="break-words text-base font-black text-[var(--text-primary)]">
               {opportunity.title || "Untitled opportunity"}
             </h3>
 
@@ -57,13 +57,13 @@ export default function OpportunityCard({
           </div>
 
           {companyName ? (
-            <p className="mt-2 text-sm font-semibold text-slate-600">
+            <p className="mt-2 text-sm font-semibold text-[var(--text-secondary)]">
               {companyName}
             </p>
           ) : null}
 
           {opportunity.notes ? (
-            <p className="mt-3 line-clamp-2 whitespace-pre-wrap text-sm leading-6 text-slate-500">
+            <p className="mt-3 line-clamp-2 whitespace-pre-wrap text-sm leading-6 text-[var(--text-secondary)]">
               {opportunity.notes}
             </p>
           ) : null}
@@ -103,7 +103,7 @@ export default function OpportunityCard({
             type="button"
             onClick={onEdit}
             disabled={deleting}
-            className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm font-bold text-[var(--text-primary)] transition hover:bg-[var(--surface-soft)] disabled:cursor-not-allowed disabled:opacity-50"
           >
             Edit
           </button>
@@ -112,7 +112,7 @@ export default function OpportunityCard({
             type="button"
             onClick={onDelete}
             disabled={deleting}
-            className="rounded-xl border border-red-200 px-4 py-2.5 text-sm font-bold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm font-bold text-red-500 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {deleting ? "Deleting..." : "Delete"}
           </button>
@@ -131,11 +131,11 @@ function CardField({
 }) {
   return (
     <div>
-      <dt className="text-xs font-bold uppercase tracking-wide text-slate-400">
+      <dt className="text-xs font-bold uppercase tracking-wide text-[var(--text-secondary)]">
         {label}
       </dt>
 
-      <dd className="mt-1 break-words text-sm font-semibold text-slate-800">
+      <dd className="mt-1 break-words text-sm font-semibold text-[var(--text-primary)]">
         {value}
       </dd>
     </div>

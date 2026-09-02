@@ -36,24 +36,22 @@ export default function OpportunityList({
 
     const { data, error } = await supabase
       .from("leads")
-      .select(
-        `
-          id,
-          company_id,
-          title,
-          source,
-          status,
-          stage,
-          value,
-          probability,
-          expected_close,
-          assigned_to,
-          notes,
-          last_activity,
-          created_at,
-          updated_at
-        `,
-      )
+      .select(`
+        id,
+        company_id,
+        title,
+        source,
+        status,
+        stage,
+        value,
+        probability,
+        expected_close,
+        assigned_to,
+        notes,
+        last_activity,
+        created_at,
+        updated_at
+      `)
       .eq("company_id", companyId)
       .order("created_at", { ascending: false });
 
@@ -204,10 +202,10 @@ export default function OpportunityList({
 
   if (loading) {
     return (
-      <section className="rounded-2xl border border-[var(--border)] bg-white p-10 text-center shadow-sm">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900" />
+      <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-10 text-center shadow-sm">
+        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--accent)]" />
 
-        <p className="mt-4 text-sm font-semibold text-slate-600">
+        <p className="mt-4 text-sm font-semibold text-[var(--text-secondary)]">
           Loading sales opportunities...
         </p>
       </section>
@@ -216,30 +214,29 @@ export default function OpportunityList({
 
   return (
     <>
-      <section className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm">
+      <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">
               Sales opportunities
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
-              Track pipeline value, sales stages and expected closing
-              dates.
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
+              Track pipeline value, sales stages and expected closing dates.
             </p>
           </div>
 
           <button
             type="button"
             onClick={openCreateModal}
-            className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-700"
+            className="inline-flex items-center justify-center rounded-xl bg-[var(--accent)] px-4 py-3 text-sm font-bold text-white transition hover:brightness-95"
           >
             + Add opportunity
           </button>
         </div>
 
         {pageError ? (
-          <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+          <div className="mt-5 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-500">
             {pageError}
           </div>
         ) : null}
@@ -249,16 +246,16 @@ export default function OpportunityList({
         </div>
 
         {opportunities.length === 0 ? (
-          <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white text-xl shadow-sm">
+          <div className="mt-6 rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-soft)] p-10 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--surface)] text-xl shadow-sm">
               ◇
             </div>
 
-            <h3 className="mt-4 text-lg font-bold text-slate-900">
+            <h3 className="mt-4 text-lg font-bold text-[var(--text-primary)]">
               No opportunities yet
             </h3>
 
-            <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">
+            <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[var(--text-secondary)]">
               Add the first opportunity to start tracking this
               company&apos;s sales pipeline.
             </p>
@@ -266,7 +263,7 @@ export default function OpportunityList({
             <button
               type="button"
               onClick={openCreateModal}
-              className="mt-5 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-700"
+              className="mt-5 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-95"
             >
               + Add opportunity
             </button>

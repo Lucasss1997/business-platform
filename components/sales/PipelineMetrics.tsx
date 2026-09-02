@@ -53,12 +53,12 @@ function PipelineMetric({
   value: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-      <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-4">
+      <p className="text-xs font-bold uppercase tracking-wide text-[var(--text-secondary)]">
         {label}
       </p>
 
-      <p className="mt-2 truncate text-xl font-black text-slate-900">
+      <p className="mt-2 truncate text-xl font-black text-[var(--text-primary)]">
         {value}
       </p>
     </div>
