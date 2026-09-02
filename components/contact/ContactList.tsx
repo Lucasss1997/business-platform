@@ -212,8 +212,8 @@ export default function ContactList({
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-lg font-bold text-slate-900">Company contacts</h3>
-          <p className="mt-1 text-sm text-slate-500">
+          <h3 className="text-lg font-bold text-[var(--text-primary)]">Company contacts</h3>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
             People associated with this company.
           </p>
         </div>
@@ -221,7 +221,7 @@ export default function ContactList({
         <button
           type="button"
           onClick={openAddModal}
-          className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-700"
+          className="inline-flex items-center justify-center rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
         >
           + Add contact
         </button>
@@ -234,24 +234,24 @@ export default function ContactList({
       ) : null}
 
       {loading ? (
-        <div className="mt-6 rounded-2xl border border-dashed border-slate-300 p-10 text-center">
-          <p className="text-sm font-semibold text-slate-600">
+        <div className="mt-6 rounded-2xl border border-dashed border-[var(--border)] p-10 text-center">
+          <p className="text-sm font-semibold text-[var(--text-secondary)]">
             Loading contacts...
           </p>
         </div>
       ) : null}
 
       {!loading && !loadError && contacts.length === 0 ? (
-        <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 p-10 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white text-xl shadow-sm">
+        <div className="mt-6 rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-soft)] p-10 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--surface)] text-xl shadow-sm">
             👤
           </div>
 
-          <h4 className="mt-4 text-base font-bold text-slate-900">
+          <h4 className="mt-4 text-base font-bold text-[var(--text-primary)]">
             No contacts yet
           </h4>
 
-          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--text-secondary)]">
             Add decision-makers, technical contacts, finance contacts and other
             people linked to this company.
           </p>
@@ -259,7 +259,7 @@ export default function ContactList({
           <button
             type="button"
             onClick={openAddModal}
-            className="mt-5 inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-700"
+            className="mt-5 inline-flex items-center justify-center rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
           >
             + Add your first contact
           </button>
@@ -284,19 +284,19 @@ export default function ContactList({
             return (
               <article
                 key={contact.id}
-                className="rounded-2xl border border-[var(--border)] bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                className="rounded-2xl border border-[var(--border)] bg-[var(--surface-soft)] p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >
                 <div className="flex items-start gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-black text-slate-700">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--surface)] text-sm font-black text-[var(--text-primary)]">
                     {initials}
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <h4 className="truncate text-base font-bold text-slate-900">
+                    <h4 className="truncate text-base font-bold text-[var(--text-primary)]">
                       {name}
                     </h4>
 
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-1 text-sm text-[var(--text-secondary)]">
                       {contact.job_title || "Job title not recorded"}
                     </p>
                   </div>
@@ -305,7 +305,7 @@ export default function ContactList({
                     <button
                       type="button"
                       onClick={() => openEditModal(contact)}
-                      className="rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+                      className="rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--text-primary)] transition hover:bg-[var(--surface)]"
                     >
                       Edit
                     </button>
@@ -321,14 +321,14 @@ export default function ContactList({
                   </div>
                 </div>
 
-                <div className="mt-5 space-y-3 border-t border-slate-100 pt-4">
+                <div className="mt-5 space-y-3 border-t border-[var(--border)] pt-4">
                   <ContactDetail
                     label="Email"
                     value={
                       contact.email ? (
                         <a
                           href={`mailto:${contact.email}`}
-                          className="break-all text-blue-700 hover:underline"
+                          className="break-all text-[var(--accent)] hover:underline"
                         >
                           {contact.email}
                         </a>
@@ -344,7 +344,7 @@ export default function ContactList({
                       contact.phone ? (
                         <a
                           href={`tel:${contact.phone}`}
-                          className="text-blue-700 hover:underline"
+                          className="text-[var(--accent)] hover:underline"
                         >
                           {contact.phone}
                         </a>
@@ -366,16 +366,16 @@ export default function ContactList({
           onMouseDown={closeModal}
         >
           <div
-            className="w-full max-w-2xl rounded-2xl border border-[var(--border)] bg-white p-6 shadow-2xl"
+            className="w-full max-w-2xl rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xl"
             onMouseDown={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-xl font-bold text-slate-900">
+                <h3 className="text-xl font-bold text-[var(--text-primary)]">
                   {editingContact ? "Edit contact" : "Add contact"}
                 </h3>
 
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-[var(--text-secondary)]">
                   {editingContact
                     ? "Update this contact's information."
                     : "Add a person associated with this company."}
@@ -386,7 +386,7 @@ export default function ContactList({
                 type="button"
                 onClick={closeModal}
                 disabled={saving}
-                className="rounded-lg px-3 py-2 text-sm font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50"
+                className="rounded-lg px-3 py-2 text-sm font-bold text-[var(--text-secondary)] hover:bg-[var(--surface-soft)] hover:text-[var(--text-primary)] disabled:opacity-50"
               >
                 Close
               </button>
@@ -436,7 +436,7 @@ export default function ContactList({
                 </div>
               </div>
 
-              <p className="mt-4 text-xs text-slate-500">
+              <p className="mt-4 text-xs text-[var(--text-secondary)]">
                 Enter at least a first name or last name.
               </p>
 
@@ -451,7 +451,7 @@ export default function ContactList({
                   type="button"
                   onClick={closeModal}
                   disabled={saving}
-                  className="rounded-xl border border-[var(--border)] px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                  className="rounded-xl border border-[var(--border)] px-5 py-3 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--surface-soft)] disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -459,7 +459,7 @@ export default function ContactList({
                 <button
                   type="submit"
                   disabled={saving}
-                  className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-bold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-xl bg-[var(--accent)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {saving
                     ? "Saving..."
@@ -474,10 +474,10 @@ export default function ContactList({
       ) : null}
 
       {refreshingPage ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-white/80 backdrop-blur-sm">
-          <div className="rounded-2xl border border-[var(--border)] bg-white px-8 py-7 text-center shadow-xl">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm">
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-8 py-7 text-center shadow-xl">
             <div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900" />
-            <p className="mt-4 text-sm font-bold text-slate-900">
+            <p className="mt-4 text-sm font-bold text-[var(--text-primary)]">
               Updating contacts...
             </p>
           </div>
@@ -500,7 +500,7 @@ function ContactDetail({
         {label}
       </span>
 
-      <span className="text-sm font-medium text-slate-700">{value}</span>
+      <span className="text-sm font-medium text-[var(--text-primary)]">{value}</span>
     </div>
   );
 }
@@ -524,7 +524,7 @@ function FormField({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-bold text-slate-700">{label}</span>
+      <span className="text-sm font-bold text-[var(--text-primary)]">{label}</span>
 
       <input
         type={inputType}
@@ -532,10 +532,10 @@ function FormField({
         onChange={(event) => onChange(event.target.value)}
         autoFocus={autoFocus}
         aria-invalid={invalid}
-        className={`mt-2 w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 ${
+        className={`mt-2 w-full rounded-xl border bg-[var(--surface-soft)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition placeholder:text-slate-400 focus:ring-2 ${
           invalid
             ? "border-red-300 focus:border-red-400 focus:ring-red-100"
-            : "border-[var(--border)] focus:border-slate-500 focus:ring-slate-200"
+            : "border-[var(--border)] focus:border-[var(--accent)] focus:ring-[var(--accent)]/20"
         }`}
       />
 

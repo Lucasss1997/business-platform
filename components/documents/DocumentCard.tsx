@@ -158,10 +158,10 @@ export default function DocumentCard({
   }
 
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 hover:shadow-md">
+    <article className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm transition hover:border-[var(--accent)] hover:shadow-md">
       <div className="flex items-start gap-4">
         <div
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--surface-soft)] text-2xl"
           aria-hidden="true"
         >
           {getDocumentIcon(document)}
@@ -171,14 +171,14 @@ export default function DocumentCard({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <h3
-                className="truncate text-base font-semibold text-slate-950"
+                className="truncate text-base font-semibold text-[var(--text-primary)]"
                 title={document.title}
               >
                 {document.title}
               </h3>
 
               <p
-                className="mt-1 truncate text-sm text-slate-500"
+                className="mt-1 truncate text-sm text-[var(--text-secondary)]"
                 title={document.file_name}
               >
                 {document.file_name}
@@ -196,12 +196,12 @@ export default function DocumentCard({
           </div>
 
           {document.description && (
-            <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">
+            <p className="mt-3 line-clamp-2 text-sm leading-6 text-[var(--text-secondary)]">
               {document.description}
             </p>
           )}
 
-          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-500">
+          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-[var(--text-secondary)]">
             <span>{DOCUMENT_TYPE_LABELS[document.document_type]}</span>
             <span>Version {document.version}</span>
             <span>{formatFileSize(document.file_size)}</span>
@@ -217,12 +217,12 @@ export default function DocumentCard({
             </div>
           )}
 
-          <div className="mt-5 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+          <div className="mt-5 flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
             <button
               type="button"
               onClick={handleDownload}
               disabled={isDownloading || isDeleting}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg border border-[var(--border)] bg-[var(--surface-soft)] px-3 py-2 text-sm font-medium text-[var(--text-primary)] transition hover:border-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isDownloading ? "Preparing..." : "Download"}
             </button>
@@ -231,7 +231,7 @@ export default function DocumentCard({
               type="button"
               onClick={handleDelete}
               disabled={isDownloading || isDeleting}
-              className="rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg border border-red-300 bg-transparent px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isDeleting ? "Deleting..." : "Delete"}
             </button>

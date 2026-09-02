@@ -144,14 +144,14 @@ export default function DocumentList({
 
   return (
     <section className="space-y-5">
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-950">
+            <h2 className="text-lg font-semibold text-[var(--text-primary)]">
               Documents
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
               Store quotes, proposals, contracts, surveys and other
               company files.
             </p>
@@ -162,7 +162,7 @@ export default function DocumentList({
               type="button"
               onClick={() => void loadDocuments(true)}
               disabled={isLoading || isRefreshing}
-              className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-4 py-2.5 text-sm font-medium text-[var(--text-primary)] transition hover:border-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isRefreshing ? "Refreshing..." : "Refresh"}
             </button>
@@ -170,7 +170,7 @@ export default function DocumentList({
             <button
               type="button"
               onClick={() => setIsUploadOpen(true)}
-              className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+              className="rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)]"
             >
               Upload document
             </button>
@@ -189,7 +189,7 @@ export default function DocumentList({
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search title, file name or description..."
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition placeholder:text-slate-400 focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10"
             />
           </div>
 
@@ -204,7 +204,7 @@ export default function DocumentList({
               onChange={(event) =>
                 setTypeFilter(event.target.value as TypeFilter)
               }
-              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10"
             >
               <option value="all">All document types</option>
 
@@ -230,7 +230,7 @@ export default function DocumentList({
               onChange={(event) =>
                 setStatusFilter(event.target.value as StatusFilter)
               }
-              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10"
             >
               <option value="all">All statuses</option>
 
@@ -253,7 +253,7 @@ export default function DocumentList({
           )}
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2 text-sm text-slate-500">
+        <div className="mt-4 flex flex-wrap gap-2 text-sm text-[var(--text-secondary)]">
           <span>
             {documents.length}{" "}
             {documents.length === 1 ? "document" : "documents"}
@@ -300,7 +300,7 @@ export default function DocumentList({
           {Array.from({ length: 4 }).map((_, index) => (
             <div
               key={index}
-              className="h-56 animate-pulse rounded-2xl border border-slate-200 bg-slate-100"
+              className="h-56 animate-pulse rounded-2xl border border-[var(--border)] bg-[var(--surface-soft)]"
             />
           ))}
         </div>
@@ -309,12 +309,12 @@ export default function DocumentList({
       {!error &&
         !isLoading &&
         documents.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
+          <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-14 text-center">
             <div className="text-4xl" aria-hidden="true">
               📁
             </div>
 
-            <h3 className="mt-4 text-lg font-semibold text-slate-950">
+            <h3 className="mt-4 text-lg font-semibold text-[var(--text-primary)]">
               No documents yet
             </h3>
 
@@ -326,7 +326,7 @@ export default function DocumentList({
             <button
               type="button"
               onClick={() => setIsUploadOpen(true)}
-              className="mt-5 rounded-xl bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
+              className="mt-5 rounded-xl bg-[var(--accent)] px-5 py-3 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)]"
             >
               Upload first document
             </button>
@@ -337,19 +337,19 @@ export default function DocumentList({
         !isLoading &&
         documents.length > 0 &&
         filteredDocuments.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
-            <h3 className="text-lg font-semibold text-slate-950">
+          <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-12 text-center">
+            <h3 className="text-lg font-semibold text-[var(--text-primary)]">
               No matching documents
             </h3>
 
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">
               Try changing your search or filter selections.
             </p>
 
             <button
               type="button"
               onClick={clearFilters}
-              className="mt-4 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-4 py-2.5 text-sm font-medium text-[var(--text-primary)] transition hover:border-[var(--accent)]"
             >
               Clear filters
             </button>

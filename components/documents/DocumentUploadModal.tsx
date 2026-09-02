@@ -219,17 +219,17 @@ export default function DocumentUploadModal({
         }
       }}
     >
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl">
-        <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
+      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-2xl">
+        <div className="flex items-start justify-between border-b border-[var(--border)] px-6 py-5">
           <div>
             <h2
               id="document-upload-title"
-              className="text-xl font-semibold text-slate-950"
+              className="text-xl font-semibold text-[var(--text-primary)]"
             >
               Upload document
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
               Add a document to this company&apos;s secure document centre.
             </p>
           </div>
@@ -238,7 +238,7 @@ export default function DocumentUploadModal({
             type="button"
             onClick={handleClose}
             disabled={isUploading}
-            className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-lg p-2 text-[var(--text-secondary)] transition hover:bg-[var(--surface-soft)] hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Close upload modal"
           >
             <span aria-hidden="true" className="text-xl leading-none">
@@ -249,7 +249,7 @@ export default function DocumentUploadModal({
 
         <form onSubmit={handleSubmit} className="space-y-6 p-6">
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
+            <label className="mb-2 block text-sm font-medium text-[var(--text-primary)]">
               File
             </label>
 
@@ -288,7 +288,7 @@ export default function DocumentUploadModal({
                 "flex min-h-40 w-full flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-8 text-center transition",
                 isDragging
                   ? "border-blue-500 bg-blue-50"
-                  : "border-slate-300 bg-slate-50 hover:border-slate-400 hover:bg-slate-100",
+                  : "border-[var(--border)] bg-[var(--surface-soft)] hover:border-[var(--accent)] hover:bg-[var(--surface-muted)]",
                 isUploading
                   ? "cursor-not-allowed opacity-60"
                   : "cursor-pointer",
@@ -300,25 +300,25 @@ export default function DocumentUploadModal({
 
               {file ? (
                 <>
-                  <span className="mt-3 font-medium text-slate-900">
+                  <span className="mt-3 font-medium text-[var(--text-primary)]">
                     {file.name}
                   </span>
 
-                  <span className="mt-1 text-sm text-slate-500">
+                  <span className="mt-1 text-sm text-[var(--text-secondary)]">
                     {formatFileSize(file.size)}
                   </span>
 
-                  <span className="mt-3 text-sm font-medium text-blue-600">
+                  <span className="mt-3 text-sm font-medium text-[var(--accent)]">
                     Choose another file
                   </span>
                 </>
               ) : (
                 <>
-                  <span className="mt-3 font-medium text-slate-900">
+                  <span className="mt-3 font-medium text-[var(--text-primary)]">
                     Drop a file here or click to browse
                   </span>
 
-                  <span className="mt-1 text-sm text-slate-500">
+                  <span className="mt-1 text-sm text-[var(--text-secondary)]">
                     PDF, Office, text, CSV or image up to {maxFileSizeLabel}
                   </span>
                 </>
@@ -330,7 +330,7 @@ export default function DocumentUploadModal({
             <div className="md:col-span-2">
               <label
                 htmlFor="document-title"
-                className="mb-2 block text-sm font-medium text-slate-700"
+                className="mb-2 block text-sm font-medium text-[var(--text-primary)]"
               >
                 Title
               </label>
@@ -342,14 +342,14 @@ export default function DocumentUploadModal({
                 disabled={isUploading}
                 onChange={(event) => setTitle(event.target.value)}
                 placeholder="Document title"
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-slate-100"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition placeholder:text-slate-400 focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10 disabled:cursor-not-allowed disabled:bg-slate-100"
               />
             </div>
 
             <div>
               <label
                 htmlFor="document-type"
-                className="mb-2 block text-sm font-medium text-slate-700"
+                className="mb-2 block text-sm font-medium text-[var(--text-primary)]"
               >
                 Document type
               </label>
@@ -361,7 +361,7 @@ export default function DocumentUploadModal({
                 onChange={(event) =>
                   setDocumentType(event.target.value as DocumentType)
                 }
-                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-slate-100"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10 disabled:cursor-not-allowed disabled:bg-slate-100"
               >
                 {DOCUMENT_TYPES.map((type) => (
                   <option key={type} value={type}>
@@ -374,7 +374,7 @@ export default function DocumentUploadModal({
             <div>
               <label
                 htmlFor="document-status"
-                className="mb-2 block text-sm font-medium text-slate-700"
+                className="mb-2 block text-sm font-medium text-[var(--text-primary)]"
               >
                 Status
               </label>
@@ -386,7 +386,7 @@ export default function DocumentUploadModal({
                 onChange={(event) =>
                   setStatus(event.target.value as DocumentStatus)
                 }
-                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-slate-100"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10 disabled:cursor-not-allowed disabled:bg-slate-100"
               >
                 {DOCUMENT_STATUSES.map((documentStatus) => (
                   <option key={documentStatus} value={documentStatus}>
@@ -399,10 +399,10 @@ export default function DocumentUploadModal({
             <div className="md:col-span-2">
               <label
                 htmlFor="document-description"
-                className="mb-2 block text-sm font-medium text-slate-700"
+                className="mb-2 block text-sm font-medium text-[var(--text-primary)]"
               >
                 Description
-                <span className="ml-1 font-normal text-slate-400">
+                <span className="ml-1 font-normal text-[var(--text-secondary)]">
                   Optional
                 </span>
               </label>
@@ -414,7 +414,7 @@ export default function DocumentUploadModal({
                 onChange={(event) => setDescription(event.target.value)}
                 rows={4}
                 placeholder="Add notes or a brief description..."
-                className="w-full resize-y rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-slate-100"
+                className="w-full resize-y rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10 disabled:cursor-not-allowed disabled:bg-slate-100"
               />
             </div>
           </div>
@@ -428,12 +428,12 @@ export default function DocumentUploadModal({
             </div>
           )}
 
-          <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-3 border-t border-[var(--border)] pt-5 sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={handleClose}
               disabled={isUploading}
-              className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-[var(--text-primary)] transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Cancel
             </button>
@@ -441,7 +441,7 @@ export default function DocumentUploadModal({
             <button
               type="submit"
               disabled={isUploading || !file || !title.trim()}
-              className="rounded-xl bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl bg-[var(--accent)] px-5 py-3 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isUploading ? "Uploading..." : "Upload document"}
             </button>

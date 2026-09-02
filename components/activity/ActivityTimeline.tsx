@@ -304,12 +304,12 @@ export default function ActivityTimeline({
 
   if (loading) {
     return (
-      <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+      <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 shadow-sm">
         <div className="flex items-center justify-center py-10">
           <div className="text-center">
             <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900" />
 
-            <p className="mt-4 text-sm font-semibold text-slate-500">
+            <p className="mt-4 text-sm font-semibold text-[var(--text-secondary)]">
               Loading company activity...
             </p>
           </div>
@@ -342,16 +342,16 @@ export default function ActivityTimeline({
 
   if (activities.length === 0) {
     return (
-      <section className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white text-xl font-black text-slate-400 shadow-sm">
+      <section className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)] p-10 text-center">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--surface-soft)] text-xl font-black text-[var(--text-secondary)] shadow-sm">
           ↻
         </div>
 
-        <h3 className="mt-4 text-lg font-black text-slate-900">
+        <h3 className="mt-4 text-lg font-black text-[var(--text-primary)]">
           No activity yet
         </h3>
 
-        <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">
+        <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[var(--text-secondary)]">
           Changes involving this company will appear here
           automatically.
         </p>
@@ -360,14 +360,14 @@ export default function ActivityTimeline({
   }
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <header className="flex flex-col gap-3 border-b border-slate-200 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+    <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-sm">
+      <header className="flex flex-col gap-3 border-b border-[var(--border)] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-lg font-black text-slate-900">
+          <h2 className="text-lg font-black text-[var(--text-primary)]">
             Activity timeline
           </h2>
 
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
             A chronological record of activity involving
             this company.
           </p>
@@ -376,7 +376,7 @@ export default function ActivityTimeline({
         <button
           type="button"
           onClick={() => void loadActivities()}
-          className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+          className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-4 py-2.5 text-sm font-bold text-[var(--text-primary)] transition hover:border-[var(--accent)] hover:bg-[var(--surface-muted)]"
         >
           Refresh
         </button>
@@ -387,11 +387,11 @@ export default function ActivityTimeline({
           {groupedActivities.map((group) => (
             <section key={group.label}>
               <div className="mb-4 flex items-center gap-3">
-                <h3 className="shrink-0 text-xs font-black uppercase tracking-[0.16em] text-slate-500">
+                <h3 className="shrink-0 text-xs font-black uppercase tracking-[0.16em] text-[var(--text-secondary)]">
                   {group.label}
                 </h3>
 
-                <div className="h-px flex-1 bg-slate-200" />
+                <div className="h-px flex-1 bg-[var(--border)]" />
               </div>
 
               <div className="space-y-0">
@@ -410,7 +410,7 @@ export default function ActivityTimeline({
                         className="relative grid grid-cols-[44px_minmax(0,1fr)] gap-4"
                       >
                         {!isLast ? (
-                          <div className="absolute bottom-0 left-[21px] top-11 w-px bg-slate-200" />
+                          <div className="absolute bottom-0 left-[21px] top-11 w-px bg-[var(--border)]" />
                         ) : null}
 
                         <div
@@ -424,7 +424,7 @@ export default function ActivityTimeline({
                             isLast ? "pb-0" : "pb-6"
                           }`}
                         >
-                          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-soft)] p-4">
                             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                               <div className="min-w-0">
                                 <div className="flex flex-wrap items-center gap-2">
@@ -436,22 +436,22 @@ export default function ActivityTimeline({
                                     }
                                   </span>
 
-                                  <span className="inline-flex rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-500">
+                                  <span className="inline-flex rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-bold text-[var(--text-secondary)]">
                                     {getEntityLabel(
                                       activity.entity_type,
                                     )}
                                   </span>
                                 </div>
 
-                                <p className="mt-3 break-words text-sm font-bold leading-6 text-slate-900">
+                                <p className="mt-3 break-words text-sm font-bold leading-6 text-[var(--text-primary)]">
                                   {
                                     activity.description
                                   }
                                 </p>
 
-                                <p className="mt-2 text-xs text-slate-500">
+                                <p className="mt-2 text-xs text-[var(--text-secondary)]">
                                   By{" "}
-                                  <span className="font-bold text-slate-700">
+                                  <span className="font-bold text-[var(--text-primary)]">
                                     {activity.actor_name ||
                                       "System"}
                                   </span>
@@ -465,7 +465,7 @@ export default function ActivityTimeline({
                                 title={formatFullDate(
                                   activity.created_at,
                                 )}
-                                className="shrink-0 text-xs font-bold text-slate-400"
+                                className="shrink-0 text-xs font-bold text-[var(--text-secondary)]"
                               >
                                 {formatActivityTime(
                                   activity.created_at,
