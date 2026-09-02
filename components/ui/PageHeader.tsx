@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Button from "./Button";
+import ThemeToggle from "./ThemeToggle";
 
 export type PageHeaderProps = {
   eyebrow?: string;
@@ -25,7 +26,10 @@ export default function PageHeader({
   children,
 }: PageHeaderProps) {
   return (
-    <header className="border-b border-[var(--border)] bg-white">
+    <header
+      className="border-b border-[var(--border)]"
+      style={{ background: "var(--surface)" }}
+    >
       <div className="flex flex-col gap-5 px-6 py-6 lg:flex-row lg:items-center lg:justify-between lg:px-10 lg:py-8">
         <div className="min-w-0">
           {eyebrow && (
@@ -46,20 +50,16 @@ export default function PageHeader({
         </div>
 
         <div className="flex shrink-0 flex-wrap items-center gap-3">
+          <ThemeToggle />
+
           {secondaryActionLabel && secondaryActionHref && (
-            <Button
-              href={secondaryActionHref}
-              variant="outline"
-            >
+            <Button href={secondaryActionHref} variant="outline">
               {secondaryActionLabel}
             </Button>
           )}
 
           {actionLabel && actionHref && (
-            <Button
-              href={actionHref}
-              leftIcon={actionIcon}
-            >
+            <Button href={actionHref} leftIcon={actionIcon}>
               {actionLabel}
             </Button>
           )}

@@ -25,7 +25,7 @@ function CardRoot({
   return (
     <div
       className={[
-        "overflow-hidden rounded-2xl border border-[var(--border)] bg-white",
+        "overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)]",
         "shadow-[0_1px_2px_rgba(15,23,42,0.04)]",
         paddingClasses[padding],
         className,

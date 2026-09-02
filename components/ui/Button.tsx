@@ -43,7 +43,7 @@ const variantClasses: Record<ButtonVariant, string> = {
   secondary:
     "bg-[#101827] text-white hover:bg-[#182338] focus-visible:ring-[#101827]",
   outline:
-    "border border-[var(--border)] bg-white text-[var(--text-primary)] hover:bg-[var(--surface-muted)] focus-visible:ring-[var(--accent)]",
+   "border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] hover:bg-[var(--surface-soft)] focus-visible:ring-[var(--accent)]",
   danger:
     "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600",
   ghost:
