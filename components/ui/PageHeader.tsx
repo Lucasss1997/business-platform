@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Button from "./Button";
 import ThemeToggle from "./ThemeToggle";
+import UserMenu from "./UserMenu";
 
 export type PageHeaderProps = {
   eyebrow?: string;
@@ -65,6 +66,8 @@ export default function PageHeader({
           )}
 
           {children}
+
+          <UserMenu />
         </div>
       </div>
     </header>

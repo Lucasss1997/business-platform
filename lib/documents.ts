@@ -189,11 +189,13 @@ function validateFile(file: File) {
 }
 
 function buildStoragePath({
+  organisationId,
   companyId,
   opportunityId,
   documentId,
   fileName,
 }: {
+  organisationId: string;
   companyId: string;
   opportunityId?: string | null;
   documentId: string;
@@ -202,6 +204,7 @@ function buildStoragePath({
   const parentFolder = opportunityId || "general";
 
   return [
+    organisationId,
     companyId,
     parentFolder,
     documentId,
@@ -226,11 +229,27 @@ export async function uploadDocument({
       throw new Error("A company is required before uploading a document.");
     }
 
+
     validateFile(file);
 
+    const { data: company, error: companyError } = await supabase
+      .from("companies")
+      .select("organisation_id")
+      .eq("id", companyId)
+      .single();
+
+    if (companyError || !company?.organisation_id) {
+      throw new Error(
+        companyError?.message ||
+          "The company does not belong to a valid organisation."
+      );
+    }
+
+    const organisationId = company.organisation_id;
     const documentId = crypto.randomUUID();
 
     const filePath = buildStoragePath({
+      organisationId,
       companyId,
       opportunityId,
       documentId,
@@ -410,21 +429,26 @@ export async function downloadDocument(
   document: Pick<DocumentRecord, "file_path" | "file_name">,
 ): Promise<DocumentServiceResult<true>> {
   try {
-    const urlResult = await createDocumentDownloadUrl(document);
+    const { data, error } = await supabase.storage
+      .from(DOCUMENTS_BUCKET)
+      .download(document.file_path);
 
-    if (!urlResult.success) {
-      return urlResult;
+    if (error) {
+      throw new Error(`Download failed: ${error.message}`);
     }
 
+    const objectUrl = URL.createObjectURL(data);
     const anchor = window.document.createElement("a");
 
-    anchor.href = urlResult.data;
+    anchor.href = objectUrl;
     anchor.download = document.file_name;
-    anchor.rel = "noopener noreferrer";
+    anchor.style.display = "none";
 
     window.document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
+
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
 
     return success(true);
   } catch (error) {
@@ -550,3 +574,9 @@ export async function deleteDocument(
     return failure(error);
   }
 }
+
+
+
+
+
+

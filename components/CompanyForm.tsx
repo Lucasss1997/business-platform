@@ -93,10 +93,10 @@ export default function CompanyForm({
   ] = useState("");
 
   const inputClass =
-    "mt-2 w-full rounded-xl border border-[var(--border)] bg-white px-3.5 py-3 text-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200";
+    "mt-2 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-3.5 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20";
 
   const labelClass =
-    "text-sm font-semibold text-slate-700";
+    "text-sm font-semibold text-[var(--text-primary)]";
 
   function update(
     name: keyof CompanyFormValues,
@@ -299,8 +299,8 @@ export default function CompanyForm({
           </div>
         ) : null}
 
-        <section className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-bold">
+        <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+          <h2 className="text-lg font-bold text-[var(--text-primary)]">
             Company details
           </h2>
 
@@ -395,8 +395,8 @@ export default function CompanyForm({
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-bold">
+        <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+          <h2 className="text-lg font-bold text-[var(--text-primary)]">
             Primary contact
           </h2>
 
@@ -459,8 +459,8 @@ export default function CompanyForm({
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-bold">
+        <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+          <h2 className="text-lg font-bold text-[var(--text-primary)]">
             Commercial information
           </h2>
 
@@ -585,14 +585,14 @@ export default function CompanyForm({
           <button
             type="button"
             onClick={() => router.back()}
-            className="rounded-xl border border-[var(--border)] bg-white px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50"
+            className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-5 py-3 text-sm font-bold text-[var(--text-primary)] transition hover:border-[var(--accent)]"
           >
             Cancel
           </button>
 
           <button
             disabled={saving || checkingName}
-            className="rounded-xl bg-[var(--text-primary)] px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-xl bg-[var(--accent)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {saving
               ? "Saving..."
@@ -610,7 +610,7 @@ export default function CompanyForm({
           aria-modal="true"
           aria-labelledby="duplicate-company-title"
         >
-          <div className="w-full max-w-lg rounded-2xl border border-[var(--border)] bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-lg rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xl">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-wide text-amber-600">
