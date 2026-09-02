@@ -25,6 +25,11 @@ const sections = [
     description: "Logo and customer-facing identity",
   },
   {
+    label: "Users & access",
+    href: "/settings/users",
+    description: "Invite users and manage access",
+  },
+  {
     label: "Integrations",
     href: "/settings/integrations",
     description: "Connected services",
