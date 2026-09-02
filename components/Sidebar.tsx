@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 const navItems = [
   { label: "Dashboard", href: "/", symbol: "⌂" },
@@ -19,9 +20,17 @@ const plannedItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createClient();
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    router.replace("/login");
+    router.refresh();
+  }
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-[var(--border)] bg-[#101827] px-4 py-6 text-white lg:block">
+    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-[var(--border)] bg-[#101827] px-4 py-6 text-white lg:flex">
       <div className="mb-8 px-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-sm font-black text-[#101827]">
           P
@@ -76,6 +85,18 @@ export default function Sidebar() {
           ))}
         </div>
       </div>
+
+      <div className="mt-auto border-t border-white/10 pt-4">
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white"
+        >
+          <span aria-hidden>&rarr;</span>
+          Sign out
+        </button>
+      </div>
     </aside>
   );
 }
+
