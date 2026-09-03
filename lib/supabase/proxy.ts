@@ -35,10 +35,19 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isLoginPage = request.nextUrl.pathname.startsWith("/login");
-  const isPublicSharePage = request.nextUrl.pathname.startsWith("/share/");
+  const pathname = request.nextUrl.pathname;
 
-  if (!user && !isLoginPage && !isPublicSharePage) {
+  const isLoginPage = pathname.startsWith("/login");
+  const isSetupAccountPage = pathname.startsWith("/setup-account");
+  const isResetPasswordPage = pathname.startsWith("/reset-password");
+  const isPublicSharePage = pathname.startsWith("/share/");
+
+  const isPublicAuthPage =
+    isLoginPage ||
+    isSetupAccountPage ||
+    isResetPasswordPage;
+
+  if (!user && !isPublicAuthPage && !isPublicSharePage) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
@@ -52,4 +61,3 @@ export async function updateSession(request: NextRequest) {
 
   return response;
 }
-

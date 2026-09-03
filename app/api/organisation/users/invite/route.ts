@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
         type: "invite",
         email,
         options: {
-          redirectTo: `${origin}/`,
+          redirectTo: `${origin}/setup-account`,
           data: {
             display_name: displayName,
           },
