@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import InviteUserForm from "@/components/settings/InviteUserForm";
 import UserAccessActions from "@/components/settings/UserAccessActions";
 
@@ -30,6 +31,7 @@ export default async function UsersPage() {
   }
 
   const organisationId = membership.organisation_id;
+  const admin = createAdminClient();
 
   const { data: organisation } = await supabase
     .from("organisations")
@@ -67,7 +69,7 @@ export default async function UsersPage() {
 
   const { data: profiles } =
     memberIds.length > 0
-      ? await supabase
+      ? await admin
           .from("profiles")
           .select("id, display_name, email")
           .in("id", memberIds)
