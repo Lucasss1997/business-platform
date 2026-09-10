@@ -12,6 +12,16 @@ export default function SettingsPage() {
 
       <div className="grid gap-4 md:grid-cols-2">
         <Link
+          href="/settings/account"
+          className="rounded-xl border p-5 transition hover:bg-muted/40"
+        >
+          <h2 className="font-semibold">My account</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage your account and change your password.
+          </p>
+        </Link>
+
+        <Link
           href="/settings/organisation/branding"
           className="rounded-xl border p-5 transition hover:bg-muted/40"
         >
