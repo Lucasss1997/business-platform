@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
         },
       });
 
-    if (linkError || !linkData?.properties?.action_link) {
+    if (linkError || !linkData?.properties?.hashed_token) {
       return NextResponse.json(
         { error: linkError?.message || "Could not create the invitation." },
         { status: 400 }
@@ -236,7 +236,12 @@ export async function POST(request: NextRequest) {
 
     const safeOrganisation = escapeHtml(organisationName);
     const safeName = escapeHtml(displayName);
-    const safeLink = escapeHtml(linkData.properties.action_link);
+    const inviteLink =
+      `${origin}/auth/confirm?token_hash=${encodeURIComponent(
+        linkData.properties.hashed_token
+      )}&type=invite&next=${encodeURIComponent("/setup-account")}`;
+
+    const safeLink = escapeHtml(inviteLink);
     const brandColour = validHexColour(
       organisation.brand_primary_colour
     );
