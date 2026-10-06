@@ -9,6 +9,7 @@ const navItems = [
   { label: "Companies", href: "/companies", symbol: "C" },
   { label: "Sales", href: "/sales", symbol: "Â£" },
   { label: "Catalogue", href: "/catalogue", symbol: "K" },
+  { label: "Marketing", href: "/marketing", symbol: "M" },
   { label: "Tasks", href: "/tasks", symbol: "T" },
   { label: "Settings", href: "/settings", symbol: "S" },
 ];
