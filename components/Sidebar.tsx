@@ -25,6 +25,7 @@ const groups = [
     items: [
       { label: "Catalogue", href: "/catalogue", icon: "catalogue" },
       { label: "Marketing", href: "/marketing", icon: "marketing" },
+      { label: "Email campaigns", href: "/marketing/campaigns", icon: "marketing" },
     ],
   },
   {
