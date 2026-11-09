@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import NotificationBell from "@/components/ui/NotificationBell";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -102,7 +103,9 @@ export default function UserMenu() {
   if (!user) return null;
 
   return (
-    <div className="relative">
+    <div className="flex items-center gap-3">
+      <NotificationBell />
+      <div className="relative">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
@@ -163,6 +166,7 @@ export default function UserMenu() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

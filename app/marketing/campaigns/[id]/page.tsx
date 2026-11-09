@@ -52,7 +52,7 @@ export default async function CampaignDetail({
   const owner = campaign.created_by === user.id;
   const editable = owner && ["draft", "returned"].includes(campaign.status)
     && ["user", "admin"].includes(membership?.role ?? "");
-  const canReview = !owner && membership?.role === "admin"
+  const canReview = membership?.role === "admin"
     && campaign.status === "pending_approval";
 
   // Always include previously selected CRM records, even beyond the picker limit.
@@ -248,22 +248,25 @@ export default async function CampaignDetail({
             <label className="block text-sm">Approval note (optional)
               <textarea name="note" maxLength={2000} rows={2} className={input} />
             </label>
-            <button name="action" value="approve" className={button}>Approve campaign</button>
+            <input type="hidden" name="action" value="approve" />
+            <button type="submit" className={button}>Approve campaign</button>
           </form>
           <form action={changeCampaignStatus} className="space-y-3">
             {identity()}
             <label className="block text-sm">Changes required
               <textarea name="note" required maxLength={2000} rows={3} className={input} />
             </label>
-            <button name="action" value="return" className={secondary}>Return for changes</button>
+            <input type="hidden" name="action" value="return" />
+            <button type="submit" className={secondary}>Return for changes</button>
           </form>
         </>}
 
         {owner && ["pending_approval", "approved", "returned"].includes(campaign.status) && (
           <form action={changeCampaignStatus}>
             {identity()}
-            <button name="action" value="reopen" className={secondary}>
-              Reopen as draft and remove approval
+            <input type="hidden" name="action" value="reopen" />
+            <button type="submit" className={secondary}>
+              Reopen as draft (requires approval again)
             </button>
           </form>
         )}
@@ -272,11 +275,12 @@ export default async function CampaignDetail({
           ["draft", "returned", "pending_approval", "approved"].includes(campaign.status) && (
           <form action={changeCampaignStatus}>
             {identity()}
-            <button name="action" value="cancel" className={secondary}>Cancel campaign</button>
+            <input type="hidden" name="action" value="cancel" />
+            <button type="submit" className={secondary}>Cancel campaign</button>
           </form>
         )}
 
-        {owner && campaign.status === "pending_approval" &&
+        {owner && membership?.role !== "admin" && campaign.status === "pending_approval" &&
           <p className="text-sm">Waiting for another organisation admin to review.</p>}
         {campaign.status === "approved" &&
           <p className="text-sm">Approved. Sending will become available after delivery setup.</p>}
