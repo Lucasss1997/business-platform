@@ -64,7 +64,7 @@ export default async function MailchimpSettings({
         </h2>
         <p className="mt-2 text-sm">
           Sender: {process.env.MAILCHIMP_FROM_NAME || "Not configured"}
-          {" â€” "}{process.env.MAILCHIMP_FROM_EMAIL || "Not configured"}
+          {"  -  "}{process.env.MAILCHIMP_FROM_EMAIL || "Not configured"}
         </p>
         <p className="mt-2 text-sm text-[var(--text-secondary)]">
           Test recipient: lucas.stephenson@icloud.com.
@@ -80,7 +80,7 @@ export default async function MailchimpSettings({
             <select name="campaign_id" required
               className="mt-2 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
               {campaigns.map(campaign => <option key={campaign.id} value={campaign.id}>
-                {campaign.name} â€” {campaign.status.replaceAll("_", " ")}
+                {campaign.name}  -  {campaign.status.replaceAll("_", " ")}
               </option>)}
             </select>
           </label>
