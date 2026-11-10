@@ -1,3 +1,4 @@
+import ProductPhotoSubmit from "@/components/marketing/ProductPhotoSubmit";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -59,7 +60,7 @@ export default async function ProductPhotosPage({
             <div>
               <h2 className="font-semibold">{product.name}</h2>
               <p className="text-sm text-[var(--text-secondary)]">
-                {product.brand} · {product.group} · {product.photoReady ? "Photo approved" : "Photo pending"}
+                {product.brand} Â· {product.group} Â· {product.photoReady ? "Photo approved" : "Photo pending"}
               </p>
             </div>
             <label className="block text-sm">
@@ -75,10 +76,13 @@ export default async function ProductPhotosPage({
                 and contains no manufacturer contact details.
               </span>
             </label>
-            <button type="submit"
-              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white">
-              Save and approve photograph
-            </button>
+            <ProductPhotoSubmit />
+            {message && (
+              <p role="status"
+                className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-sm">
+                {message}
+              </p>
+            )}
           </form>
         ))}
       </section>
