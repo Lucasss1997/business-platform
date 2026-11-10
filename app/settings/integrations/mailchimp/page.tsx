@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import AppShell from "@/components/layout/AppShell";
-import PageHeader from "@/components/ui/PageHeader";
+
+
 import CampaignSubmitButton from "@/components/marketing/CampaignSubmitButton";
 import { sendMailchimpTest } from "./actions";
 
@@ -22,9 +22,9 @@ export default async function MailchimpSettings({
     .eq("user_id", user.id).eq("active", true).maybeSingle();
 
   if (membershipError || membership?.role !== "admin") {
-    return <AppShell><p role="alert" className="p-8">
+    return <><p role="alert" className="p-8">
       Organisation admin access is required.
-    </p></AppShell>;
+    </p></>;
   }
 
   const { data: campaigns, error } = await supabase
@@ -41,9 +41,16 @@ export default async function MailchimpSettings({
   );
   const panel = "rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6";
 
-  return <AppShell>
-    <PageHeader eyebrow="Integrations" title="Mailchimp"
-      subtitle="Test the email connection before enabling customer campaigns." />
+  return <>
+    <div className="px-6 pt-6 lg:px-10 lg:pt-10">
+      <p className="text-xs font-semibold uppercase tracking-widest text-[var(--accent)]">
+        Integrations
+      </p>
+      <h1 className="mt-2 text-3xl font-semibold">Mailchimp</h1>
+      <p className="mt-2 text-sm text-[var(--text-secondary)]">
+        Test the email connection before enabling customer campaigns.
+      </p>
+    </div>
     <section className="space-y-6 p-6 lg:p-10">
       <Link href="/marketing/campaigns"
         className="font-semibold text-[var(--accent)]">Back to campaigns</Link>
@@ -57,7 +64,7 @@ export default async function MailchimpSettings({
         </h2>
         <p className="mt-2 text-sm">
           Sender: {process.env.MAILCHIMP_FROM_NAME || "Not configured"}
-          {" — "}{process.env.MAILCHIMP_FROM_EMAIL || "Not configured"}
+          {" â€” "}{process.env.MAILCHIMP_FROM_EMAIL || "Not configured"}
         </p>
         <p className="mt-2 text-sm text-[var(--text-secondary)]">
           Test recipient: lucas.stephenson@icloud.com.
@@ -73,7 +80,7 @@ export default async function MailchimpSettings({
             <select name="campaign_id" required
               className="mt-2 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
               {campaigns.map(campaign => <option key={campaign.id} value={campaign.id}>
-                {campaign.name} — {campaign.status.replaceAll("_", " ")}
+                {campaign.name} â€” {campaign.status.replaceAll("_", " ")}
               </option>)}
             </select>
           </label>
@@ -90,5 +97,5 @@ export default async function MailchimpSettings({
         Check the environment settings and create a Portal campaign before testing.
       </p>}
     </section>
-  </AppShell>;
+  </>;
 }
