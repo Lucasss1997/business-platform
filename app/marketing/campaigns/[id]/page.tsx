@@ -1,3 +1,5 @@
+import CampaignSubmitButton from "@/components/marketing/CampaignSubmitButton";
+import CampaignFeedback from "@/components/marketing/CampaignFeedback";
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -110,8 +112,13 @@ export default async function CampaignDetail({
         Back to campaigns
       </Link>
 
-      {query.error && <p role="alert" className={panel}>{query.error.slice(0, 2000)}</p>}
-      {query.message && <p role="status" className={panel}>{query.message.slice(0, 300)}</p>}
+      <CampaignFeedback
+        error={query.error}
+        message={query.message}
+        status={campaign.status}
+        revision={campaign.revision}
+        updatedAt={campaign.updated_at}
+      />
       {loadFailed && <p role="alert" className={panel}>
         Some campaign data could not be loaded. Refresh before editing or reviewing.
       </p>}
@@ -216,7 +223,7 @@ export default async function CampaignDetail({
             This note records your assessment. It does not automatically establish permission
             or confirm the email provider accepts the list.
           </p>
-          <button className={button}>Save draft and recipients</button>
+          <CampaignSubmitButton className={button}>Save draft and recipients</CampaignSubmitButton>
           <p className="text-sm">Save changes before submitting for approval below.</p>
         </form>
       ) : (
@@ -238,7 +245,7 @@ export default async function CampaignDetail({
           <form action={changeCampaignStatus}>
             {identity()}
             <input type="hidden" name="action" value="submit" />
-            <button className={button}>Submit saved campaign for approval</button>
+            <CampaignSubmitButton className={button}>Submit saved campaign for approval</CampaignSubmitButton>
           </form>
         )}
 
@@ -249,7 +256,7 @@ export default async function CampaignDetail({
               <textarea name="note" maxLength={2000} rows={2} className={input} />
             </label>
             <input type="hidden" name="action" value="approve" />
-            <button type="submit" className={button}>Approve campaign</button>
+            <CampaignSubmitButton className={button}>Approve campaign</CampaignSubmitButton>
           </form>
           <form action={changeCampaignStatus} className="space-y-3">
             {identity()}
@@ -257,7 +264,7 @@ export default async function CampaignDetail({
               <textarea name="note" required maxLength={2000} rows={3} className={input} />
             </label>
             <input type="hidden" name="action" value="return" />
-            <button type="submit" className={secondary}>Return for changes</button>
+            <CampaignSubmitButton className={secondary}>Return for changes</CampaignSubmitButton>
           </form>
         </>}
 
@@ -265,9 +272,9 @@ export default async function CampaignDetail({
           <form action={changeCampaignStatus}>
             {identity()}
             <input type="hidden" name="action" value="reopen" />
-            <button type="submit" className={secondary}>
+            <CampaignSubmitButton className={secondary}>
               Reopen as draft (requires approval again)
-            </button>
+            </CampaignSubmitButton>
           </form>
         )}
 
@@ -276,7 +283,7 @@ export default async function CampaignDetail({
           <form action={changeCampaignStatus}>
             {identity()}
             <input type="hidden" name="action" value="cancel" />
-            <button type="submit" className={secondary}>Cancel campaign</button>
+            <CampaignSubmitButton className={secondary}>Cancel campaign</CampaignSubmitButton>
           </form>
         )}
 

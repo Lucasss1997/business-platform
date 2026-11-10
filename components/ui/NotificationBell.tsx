@@ -77,12 +77,14 @@ export default function NotificationBell() {
 
     const onFocus = () => { void refresh(); };
     window.addEventListener("focus", onFocus);
+    window.addEventListener("campaign-updated", onFocus);
 
     return () => {
       mounted.current = false;
       request.current?.abort();
       window.clearInterval(timer);
       window.removeEventListener("focus", onFocus);
+      window.removeEventListener("campaign-updated", onFocus);
     };
   }, [refresh]);
 
