@@ -127,7 +127,7 @@ export async function saveCampaignDetail(form: FormData) {
     p_name: String(form.get("name") ?? "").trim(),
     p_objective: String(form.get("objective") ?? "").trim(),
     p_subject: String(form.get("subject") ?? "").trim(),
-    p_body: String(form.get("email_body") ?? ""),
+    p_body: String(form.get("email_body") ?? "").replace(/\r\n/g, "\n"),
     p_reply_to: String(form.get("reply_to") ?? "").trim(),
     p_crm_ids: crmIds,
     p_upload_recipients: imported,

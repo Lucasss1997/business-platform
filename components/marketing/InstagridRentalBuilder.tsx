@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { PDFDocument, PDFName, PDFString } from "pdf-lib";
 import RentalSocialExports from "@/components/marketing/RentalSocialExports";
 import InstagridEmailTest from "@/components/marketing/InstagridEmailTest";
+import CampaignOfferSave from "@/components/marketing/CampaignOfferSave";
 
 type Draft = {
   monthly24: string;
@@ -22,6 +23,7 @@ type Props = {
   initialName: string;
   initialEmail: string;
   testCampaigns: { id: string; name: string; status: string }[];
+  offerCampaigns: { id: string; name: string; status: string; revision: number }[];
 };
 
 const website = "https://www.mltconsultants.co.uk";
@@ -53,7 +55,7 @@ function escape(value: string) {
 }
 
 export default function InstagridRentalBuilder({
-  photo, logo, storageKey, testCampaigns
+  photo, logo, storageKey, testCampaigns, offerCampaigns
 }: Props) {
   const [draft, setDraft] = useState<Draft>({
     monthly24: "250", monthly12: "450", show12: true,
@@ -386,6 +388,15 @@ export default function InstagridRentalBuilder({
           </button>
         </div>
 
+        <CampaignOfferSave
+          campaigns={offerCampaigns}
+          monthly24={draft.monthly24}
+          monthly12={draft.monthly12}
+          show12={draft.show12}
+          email={email}
+          phone={phone}
+          disabled={!ready || !valid || busy}
+        />
         <InstagridEmailTest
           campaigns={testCampaigns}
           monthly24={draft.monthly24}

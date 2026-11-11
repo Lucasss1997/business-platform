@@ -1,3 +1,4 @@
+import CampaignOfferPreview from "@/components/marketing/CampaignOfferPreview";
 import CampaignSubmitButton from "@/components/marketing/CampaignSubmitButton";
 import CampaignFeedback from "@/components/marketing/CampaignFeedback";
 import Link from "next/link";
@@ -238,6 +239,10 @@ export default async function CampaignDetail({
         </div>
       )}
 
+      <CampaignOfferPreview
+        snapshot={campaign.flyer_snapshot}
+        revision={campaign.revision}
+      />
       {!loadFailed && <div className={panel + " space-y-4"}>
         <h2 className="font-semibold">Approval controls</h2>
 

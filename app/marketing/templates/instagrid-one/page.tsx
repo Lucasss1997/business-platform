@@ -28,7 +28,7 @@ export default async function InstagridRentalPage() {
 
   const { data: testCampaignRows } = ["admin", "user"].includes(member.role)
     ? await supabase.from("email_campaigns")
-        .select("id,name,status")
+        .select("id,name,status,revision,created_by")
         .eq("organisation_id", member.organisation_id)
         .order("created_at", { ascending: false })
         .limit(100)
@@ -81,6 +81,7 @@ export default async function InstagridRentalPage() {
           initialName={profile?.display_name || ""}
           initialEmail={user.email || ""}
           testCampaigns={testCampaigns}
+          offerCampaigns={testCampaigns.filter(campaign => campaign.created_by === user.id && ["draft", "returned"].includes(campaign.status))}
         />
       ) : (
         <div role="alert" className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6">
