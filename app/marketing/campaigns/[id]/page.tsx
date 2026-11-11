@@ -1,3 +1,4 @@
+import CampaignDeliveryControls from "@/components/marketing/CampaignDeliveryControls";
 import CampaignOfferPreview from "@/components/marketing/CampaignOfferPreview";
 import CampaignSubmitButton from "@/components/marketing/CampaignSubmitButton";
 import CampaignFeedback from "@/components/marketing/CampaignFeedback";
@@ -134,7 +135,7 @@ export default async function CampaignDetail({
           Internal values only; not additional Mailchimp charges.
         </p>
         <p className="mt-2 text-sm">
-          Delivery is not connected yet. Approval records a decision and does not send email.
+          Approval records a decision. Organisation admins prepare and send customer campaigns using the delivery controls below.
         </p>
         {campaign.review_note && <p className="mt-4 whitespace-pre-wrap">
           Review note: {campaign.review_note}
@@ -239,6 +240,15 @@ export default async function CampaignDetail({
         </div>
       )}
 
+      {!loadFailed && membership?.role === "admin" &&
+        ["approved", "sending", "sent", "send_uncertain", "failed"].includes(campaign.status) &&
+        campaign.flyer_snapshot?.template === "instagrid-one-email-v1" && (
+          <CampaignDeliveryControls
+            campaignId={id}
+            revision={campaign.revision}
+            status={campaign.status}
+          />
+      )}
       <CampaignOfferPreview
         snapshot={campaign.flyer_snapshot}
         revision={campaign.revision}
@@ -295,7 +305,7 @@ export default async function CampaignDetail({
         {owner && membership?.role !== "admin" && campaign.status === "pending_approval" &&
           <p className="text-sm">Waiting for another organisation admin to review.</p>}
         {campaign.status === "approved" &&
-          <p className="text-sm">Approved. Sending will become available after delivery setup.</p>}
+          <p className="text-sm">Approved. Use Customer delivery to check recipients and prepare this revision.</p>}
       </div>}
 
       <details className={panel}>
