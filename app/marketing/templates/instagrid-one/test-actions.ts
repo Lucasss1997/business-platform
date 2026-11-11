@@ -204,10 +204,10 @@ Instagrid ONE: ${escape(money(p24))} + VAT per month over 24 months. No deposit.
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#e9e7e2">
 <tr><td align="center" style="padding:20px 10px">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:#f5f3ef">
-<tr><td style="padding:24px 28px 8px">
-<a href="${website}"><img src="${escape(logoUrl)}" width="100" height="100" alt="MLT Consultants" style="display:block;border:0"></a>
+<tr><td style="padding:18px 28px 4px">
+<a href="${website}"><img src="${escape(logoUrl)}" width="100" alt="MLT Consultants" style="display:block;border:0;width:100px!important;max-width:100px!important;height:auto!important"></a>
 </td></tr>
-<tr><td style="padding:12px 28px 20px">
+<tr><td style="padding:8px 28px 8px">
 <h1 style="margin:0;font-size:38px;line-height:1.08;font-weight:900;letter-spacing:-1px">SERIOUS POWER.<br>SIMPLE RENTAL.</h1>
 <div style="margin-top:20px;width:75px;height:6px;background:#287328"></div>
 <h2 style="margin:25px 0 12px;font-size:27px">Instagrid ONE</h2>
@@ -216,7 +216,7 @@ Instagrid ONE: ${escape(money(p24))} + VAT per month over 24 months. No deposit.
 <p style="margin:8px 0 0;font-size:19px">24-month rental</p>
 </td></tr>
 <tr><td align="center" style="padding:0 20px">
-<a href="${escape("mailto:" + email)}"><img src="${escape(photoUrl)}" width="500" alt="Instagrid ONE portable battery power unit" style="display:block;width:100%;max-width:500px;height:auto;border:0"></a>
+<a href="${escape("mailto:" + email)}"><img src="${escape(photoUrl)}" width="380" alt="Instagrid ONE portable battery power unit" style="display:block;width:100%;max-width:380px;height:auto!important;border:0"></a>
 </td></tr>
 <tr><td style="padding:16px 28px 8px">
 <p style="margin:0 0 22px;font-size:24px;line-height:1.3;font-weight:700">No deposit. No upfront<br>rental payment.</p>
