@@ -56,7 +56,7 @@ export default function InstagridEmailTest(props: Props) {
       className="space-y-3 rounded-xl border border-[var(--border)] p-4">
       <h3 className="font-semibold">Email preview</h3>
       <p className="text-xs leading-5 text-[var(--text-secondary)]">
-        Sends only to lucas.stephenson@icloud.com using the prices and contact
+        Sends only to your signed-in account email using the prices and contact
         details on screen when you click. Records a test against the selected
         campaign without changing its saved content or approval.
       </p>
@@ -78,7 +78,7 @@ export default function InstagridEmailTest(props: Props) {
       <button type="button" onClick={send}
         disabled={sending || props.disabled || !campaignId}
         className="rounded-xl bg-emerald-400 px-4 py-3 text-sm font-semibold text-slate-950 disabled:opacity-50">
-        {sending ? "Sending test..." : "Send branded test to Lucas"}
+        {sending ? "Sending test..." : "Send preview to my email"}
       </button>
 
       {message && (

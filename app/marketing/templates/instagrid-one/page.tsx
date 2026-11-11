@@ -26,7 +26,7 @@ export default async function InstagridRentalPage() {
     </p></AppShell>;
   }
 
-  const { data: testCampaignRows } = member.role === "admin"
+  const { data: testCampaignRows } = ["admin", "user"].includes(member.role)
     ? await supabase.from("email_campaigns")
         .select("id,name,status")
         .eq("organisation_id", member.organisation_id)

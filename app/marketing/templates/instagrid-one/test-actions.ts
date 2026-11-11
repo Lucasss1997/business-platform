@@ -15,7 +15,7 @@ type Offer = {
   phone: string;
 };
 
-const target = "lucas.stephenson@icloud.com";
+
 const website = "https://www.mltconsultants.co.uk";
 
 function escape(value: string) {
@@ -50,13 +50,19 @@ export async function sendInstagridEmailTest(input: Offer) {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) throw new Error("Please sign in again.");
 
+    // Recipient comes exclusively from the authenticated account.
+    const target = user.email?.trim();
+    if (!target || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(target)) {
+      throw new Error("Your signed-in account needs a valid email address.");
+    }
+
     const { data: member, error: memberError } = await supabase
       .from("organisation_members")
       .select("organisation_id,role")
       .eq("user_id", user.id).eq("active", true).maybeSingle();
 
-    if (memberError || member?.role !== "admin") {
-      throw new Error("Organisation admin access is required to send tests.");
+    if (memberError || !member || !["admin", "user"].includes(member.role)) {
+      throw new Error("An active sales or admin account is required to send previews.");
     }
 
     if (!input || typeof input.campaignId !== "string" ||
@@ -237,7 +243,7 @@ ${phone ? `<p style="margin:0 0 8px;font-size:16px">${escape(phone)}</p>` : ""}
 <p style="margin:0;font-size:12px;line-height:1.6">${escape(totals)}</p>
 </td></tr>
 <tr><td style="padding:16px 28px;font-size:12px;line-height:1.6;color:#526052">
-Internal preview for Lucas only. No customer audience selected. This test does not send or approve your saved customer campaign.
+Internal preview for the signed-in user only. No customer audience selected. This test does not send or approve your saved customer campaign.
 </td></tr>
 </table>
 </td></tr></table>
@@ -256,7 +262,7 @@ Internal preview for Lucas only. No customer audience selected. This test does n
         "Rentals exclude VAT. Unit returned at the end of the agreed term.",
         "Warranty cover subject to applicable terms and exclusions.",
         "Full rental terms supplied with your quotation.",
-        totals, "", "Internal preview for Lucas only."
+        totals, "", "Internal preview for the signed-in user only."
       ].join("\n");
 
       // No audience or recipients property: the provider draft is test-only.
