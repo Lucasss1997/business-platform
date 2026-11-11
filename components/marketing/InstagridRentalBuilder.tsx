@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { PDFDocument, PDFName, PDFString } from "pdf-lib";
 import RentalSocialExports from "@/components/marketing/RentalSocialExports";
+import InstagridEmailTest from "@/components/marketing/InstagridEmailTest";
 
 type Draft = {
   monthly24: string;
@@ -20,6 +21,7 @@ type Props = {
   storageKey: string;
   initialName: string;
   initialEmail: string;
+  testCampaigns: { id: string; name: string; status: string }[];
 };
 
 const website = "https://www.mltconsultants.co.uk";
@@ -51,7 +53,7 @@ function escape(value: string) {
 }
 
 export default function InstagridRentalBuilder({
-  photo, logo, storageKey
+  photo, logo, storageKey, testCampaigns
 }: Props) {
   const [draft, setDraft] = useState<Draft>({
     monthly24: "250", monthly12: "450", show12: true,
@@ -384,6 +386,15 @@ export default function InstagridRentalBuilder({
           </button>
         </div>
 
+        <InstagridEmailTest
+          campaigns={testCampaigns}
+          monthly24={draft.monthly24}
+          monthly12={draft.monthly12}
+          show12={draft.show12}
+          email={email}
+          phone={phone}
+          disabled={!ready || !valid || busy}
+        />
         {notice && <p role={failed ? "alert" : "status"}
           className="rounded-xl border border-[var(--border)] p-3 text-sm">
           {notice}

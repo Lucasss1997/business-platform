@@ -26,6 +26,15 @@ export default async function InstagridRentalPage() {
     </p></AppShell>;
   }
 
+  const { data: testCampaignRows } = member.role === "admin"
+    ? await supabase.from("email_campaigns")
+        .select("id,name,status")
+        .eq("organisation_id", member.organisation_id)
+        .order("created_at", { ascending: false })
+        .limit(100)
+    : { data: [] };
+
+  const testCampaigns = testCampaignRows || [];
   const { data: profile } = await supabase
     .from("profiles").select("display_name")
     .eq("id", user.id).maybeSingle();
@@ -71,6 +80,7 @@ export default async function InstagridRentalPage() {
           storageKey={`mlt-instagrid-rental-v1:${member.organisation_id}:${user.id}`}
           initialName={profile?.display_name || ""}
           initialEmail={user.email || ""}
+          testCampaigns={testCampaigns}
         />
       ) : (
         <div role="alert" className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6">
