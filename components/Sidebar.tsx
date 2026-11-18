@@ -10,6 +10,7 @@ const groups = [
     items: [
       { label: "Overview", href: "/", icon: "dashboard" },
       { label: "Tasks", href: "/tasks", icon: "tasks" },
+      { label: "Help & guides", href: "/help", icon: "help" },
     ],
   },
   {
@@ -44,6 +45,7 @@ const paths: Record<string, string> = {
   sales: "M4 20V10 M10 20V4 M16 20v-7 M22 20H2",
   catalogue: "M3 7l9-5 9 5v10l-9 5-9-5z M3 7l9 5 9-5 M12 12v10 M7.5 4.5l9 5",
   marketing: "M3 10v4h4l11 5V5L7 10z M7 14l2 7h4l-2-5 M21 9v6",
+  help: "M12 7v14 M12 7C9 4 5 4 2 5v14c3-1 7-1 10 2 M12 7c3-3 7-3 10-2v14c-3-1-7-1-10 2",
   settings: "M4 6h16 M4 12h16 M4 18h16 M8 3v6 M16 9v6 M10 15v6",
   menu: "M4 6h16 M4 12h16 M4 18h16",
   arrow: "M5 12h14 M13 6l6 6-6 6",
