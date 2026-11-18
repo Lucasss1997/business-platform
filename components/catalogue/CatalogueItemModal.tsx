@@ -1,12 +1,8 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type FormEvent,
-} from "react";
+import { useEffect, useId, useMemo, useState, type FormEvent } from "react";
 
+import Modal, { modalSaveButton } from "@/components/ui/Modal";
 import {
   CATALOGUE_ITEM_TYPES,
   calculateMargin,
@@ -67,9 +63,7 @@ const UNIT_OPTIONS = [
   "Kilogram",
 ];
 
-function createInitialState(
-  item: CatalogueItem | null,
-): CatalogueFormState {
+function createInitialState(item: CatalogueItem | null): CatalogueFormState {
   if (item) {
     return {
       sku: item.sku ?? "",
@@ -123,6 +117,7 @@ export default function CatalogueItemModal({
   onClose,
   onSaved,
 }: CatalogueItemModalProps) {
+  const formId = useId();
   const [form, setForm] = useState<CatalogueFormState>(
     createInitialState(item),
   );
@@ -142,10 +137,7 @@ export default function CatalogueItemModal({
 
   const pricing = useMemo(
     () =>
-      calculateMargin(
-        parseNumber(form.costPrice),
-        parseNumber(form.sellPrice),
-      ),
+      calculateMargin(parseNumber(form.costPrice), parseNumber(form.sellPrice)),
     [form.costPrice, form.sellPrice],
   );
 
@@ -208,56 +200,28 @@ export default function CatalogueItemModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          handleClose();
-        }
-      }}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="catalogue-modal-title"
-        className="max-h-[92vh] w-full max-w-4xl overflow-hidden rounded-2xl bg-[var(--surface)] shadow-2xl"
-      >
-        <form
-          onSubmit={handleSubmit}
-          className="flex max-h-[92vh] flex-col"
+    <Modal
+      title={item ? "Edit catalogue item" : "New catalogue item"}
+      description="Store reusable product, service and pricing information."
+      onClose={handleClose}
+      busy={saving}
+      wide
+      dirty={JSON.stringify(form) !== JSON.stringify(createInitialState(item))}
+      formId={formId}
+      footer={
+        <button
+          type="submit"
+          form={formId}
+          disabled={saving}
+          className={modalSaveButton}
         >
-          <header className="flex items-start justify-between border-b border-[var(--border)] px-6 py-5">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
-                Catalogue
-              </p>
-
-              <h2
-                id="catalogue-modal-title"
-                className="mt-1 text-xl font-bold text-[var(--text-primary)]"
-              >
-                {item ? "Edit catalogue item" : "New catalogue item"}
-              </h2>
-
-              <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                Store reusable product, service and pricing
-                information.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleClose}
-              disabled={saving}
-              aria-label="Close"
-              className="rounded-lg px-3 py-2 text-xl text-[var(--text-secondary)] transition hover:bg-[var(--surface-soft)] hover:text-[var(--text-primary)] disabled:cursor-not-allowed"
-            >
-              ×
-            </button>
-          </header>
-
-          <div className="overflow-y-auto px-6 py-6">
+          {saving ? "Saving…" : item ? "Save changes" : "Create item"}
+        </button>
+      }
+    >
+      <form id={formId} onSubmit={handleSubmit}>
+        <fieldset disabled={saving}>
+          <div className="space-y-6">
             {formError && (
               <div
                 role="alert"
@@ -334,10 +298,7 @@ export default function CatalogueItemModal({
                     <input
                       value={form.manufacturer}
                       onChange={(event) =>
-                        updateField(
-                          "manufacturer",
-                          event.target.value,
-                        )
+                        updateField("manufacturer", event.target.value)
                       }
                       className={inputClasses}
                       placeholder="e.g. Ricoh"
@@ -367,10 +328,7 @@ export default function CatalogueItemModal({
                       <textarea
                         value={form.description}
                         onChange={(event) =>
-                          updateField(
-                            "description",
-                            event.target.value,
-                          )
+                          updateField("description", event.target.value)
                         }
                         rows={4}
                         className={inputClasses}
@@ -391,18 +349,14 @@ export default function CatalogueItemModal({
                   <Field label="Cost price">
                     <MoneyInput
                       value={form.costPrice}
-                      onChange={(value) =>
-                        updateField("costPrice", value)
-                      }
+                      onChange={(value) => updateField("costPrice", value)}
                     />
                   </Field>
 
                   <Field label="Sell price">
                     <MoneyInput
                       value={form.sellPrice}
-                      onChange={(value) =>
-                        updateField("sellPrice", value)
-                      }
+                      onChange={(value) => updateField("sellPrice", value)}
                     />
                   </Field>
 
@@ -415,10 +369,7 @@ export default function CatalogueItemModal({
                         step="0.01"
                         value={form.vatRate}
                         onChange={(event) =>
-                          updateField(
-                            "vatRate",
-                            event.target.value,
-                          )
+                          updateField("vatRate", event.target.value)
                         }
                         className={`${inputClasses} pr-10`}
                       />
@@ -465,49 +416,22 @@ export default function CatalogueItemModal({
                     label="Favourite item"
                     description="Show this item prominently in catalogue searches."
                     checked={form.favourite}
-                    onChange={(checked) =>
-                      updateField("favourite", checked)
-                    }
+                    onChange={(checked) => updateField("favourite", checked)}
                   />
 
                   <ToggleCard
                     label="Active item"
                     description="Allow this item to be selected on new proposals and transactions."
                     checked={form.active}
-                    onChange={(checked) =>
-                      updateField("active", checked)
-                    }
+                    onChange={(checked) => updateField("active", checked)}
                   />
                 </div>
               </section>
             </div>
           </div>
-
-          <footer className="flex flex-col-reverse gap-3 border-t border-[var(--border)] bg-[var(--surface-soft)] px-6 py-4 sm:flex-row sm:justify-end">
-            <button
-              type="button"
-              onClick={handleClose}
-              disabled={saving}
-              className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition hover:bg-[var(--surface-soft)] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:bg-slate-400"
-            >
-              {saving
-                ? "Saving…"
-                : item
-                  ? "Save changes"
-                  : "Create item"}
-            </button>
-          </footer>
-        </form>
-      </div>
-    </div>
+        </fieldset>
+      </form>
+    </Modal>
   );
 }
 
@@ -553,9 +477,7 @@ function SectionHeading({
         {title}
       </h3>
 
-      <p className="mt-1 text-sm text-[var(--text-secondary)]">
-        {description}
-      </p>
+      <p className="mt-1 text-sm text-[var(--text-secondary)]">{description}</p>
     </div>
   );
 }
@@ -585,13 +507,7 @@ function MoneyInput({
   );
 }
 
-function PricingMetric({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function PricingMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] px-4 py-3">
       <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">

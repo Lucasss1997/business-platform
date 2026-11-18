@@ -40,3 +40,7 @@ This extends `/tasks` without altering existing `tasks` rows or their free-text 
 For transactional tests, install `@electric-sql/pglite` in a disposable directory, then set `PGLITE_MODULE` to its `dist/index.js` and run `node scripts/test-calling-workflow.mjs`. The harness creates an isolated fixture schema and tests permissions, tenant isolation, stale saves, rollback, callbacks, manager assignment, number suppression/reimports and the retry cap. It never connects to Supabase.
 
 Acceptance test: queue one internal/test company; claim it as a salesperson; save a three-month callback; verify exactly one future task and preserved history; test handover using a second test company. Keep real lead imports separate until these pass.
+
+## Popup controls update
+
+See `docs/modal-close-controls.md` for the shared close/save/discard controls and admin section behaviour. The user-confirmed live acceptance run on 18 November 2026 produced one three-month callback due 18 February 2027, plus one due manager follow-up assigned to Paul. The later visual controls still need a deployed browser check after publishing.

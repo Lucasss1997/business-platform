@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useId, useMemo, useRef, useState } from "react";
+import Modal, { modalSaveButton } from "@/components/ui/Modal";
 import {
   DOCUMENT_STATUSES,
   DOCUMENT_TYPES,
@@ -60,10 +61,7 @@ function titleFromFileName(fileName: string) {
   const lastDot = fileName.lastIndexOf(".");
   const name = lastDot > 0 ? fileName.slice(0, lastDot) : fileName;
 
-  return name
-    .replace(/[-_]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  return name.replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim();
 }
 
 export default function DocumentUploadModal({
@@ -74,13 +72,13 @@ export default function DocumentUploadModal({
   onClose,
   onUploaded,
 }: DocumentUploadModalProps) {
+  const formId = useId();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [documentType, setDocumentType] =
-    useState<DocumentType>("other");
+  const [documentType, setDocumentType] = useState<DocumentType>("other");
   const [status, setStatus] = useState<DocumentStatus>("draft");
   const [error, setError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -185,69 +183,38 @@ export default function DocumentUploadModal({
     onClose();
   }
 
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && !isUploading) {
-        handleClose();
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [open, isUploading]);
-
   if (!open) {
     return null;
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="document-upload-title"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          handleClose();
-        }
-      }}
+    <Modal
+      title="Upload document"
+      description="Add a document to this company's secure document centre."
+      onClose={handleClose}
+      busy={isUploading}
+      dirty={Boolean(
+        file ||
+          title ||
+          description ||
+          documentType !== "other" ||
+          status !== "draft",
+      )}
+      formId={formId}
+      saveDescription="Save and close uploads the selected document."
+      footer={
+        <button
+          type="submit"
+          form={formId}
+          disabled={isUploading || !file || !title.trim()}
+          className={modalSaveButton}
+        >
+          {isUploading ? "Uploading…" : "Upload document"}
+        </button>
+      }
     >
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-2xl">
-        <div className="flex items-start justify-between border-b border-[var(--border)] px-6 py-5">
-          <div>
-            <h2
-              id="document-upload-title"
-              className="text-xl font-semibold text-[var(--text-primary)]"
-            >
-              Upload document
-            </h2>
-
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">
-              Add a document to this company&apos;s secure document centre.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleClose}
-            disabled={isUploading}
-            className="rounded-lg p-2 text-[var(--text-secondary)] transition hover:bg-[var(--surface-soft)] hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label="Close upload modal"
-          >
-            <span aria-hidden="true" className="text-xl leading-none">
-              ×
-            </span>
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6 p-6">
+      <form id={formId} onSubmit={handleSubmit} className="space-y-6">
+        <fieldset disabled={isUploading} className="space-y-6">
           <div>
             <label className="mb-2 block text-sm font-medium text-[var(--text-primary)]">
               File
@@ -427,27 +394,8 @@ export default function DocumentUploadModal({
               {error}
             </div>
           )}
-
-          <div className="flex flex-col-reverse gap-3 border-t border-[var(--border)] pt-5 sm:flex-row sm:justify-end">
-            <button
-              type="button"
-              onClick={handleClose}
-              disabled={isUploading}
-              className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-[var(--text-primary)] transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              disabled={isUploading || !file || !title.trim()}
-              className="rounded-xl bg-[var(--accent)] px-5 py-3 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isUploading ? "Uploading..." : "Upload document"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        </fieldset>
+      </form>
+    </Modal>
   );
 }

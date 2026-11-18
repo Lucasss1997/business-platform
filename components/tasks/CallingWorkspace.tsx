@@ -1,8 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+  type Ref,
+} from "react";
 import { supabase } from "@/lib/supabase";
+import Modal, { modalSaveButton, useCloseGuard } from "@/components/ui/Modal";
 import GlobalTaskList from "@/components/tasks/GlobalTaskList";
 import {
   addCalendarMonths,
@@ -52,6 +62,7 @@ export default function CallingWorkspace() {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<CallTask | null>(null);
   const [enqueueOpen, setEnqueueOpen] = useState(false);
+  const batchRef = useRef<{ requestClose: () => void }>(null);
   const [teamOpen, setTeamOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const lock = useRef(false);
@@ -217,13 +228,23 @@ export default function CallingWorkspace() {
             {admin && (
               <>
                 <button
-                  className={button}
-                  onClick={() => setEnqueueOpen((v) => !v)}
+                  className={`${button} ${enqueueOpen ? "bg-[var(--accent)] text-white" : ""}`}
+                  aria-expanded={enqueueOpen}
+                  aria-controls="calling-batch-panel"
+                  disabled={busy || loading}
+                  onClick={() =>
+                    enqueueOpen
+                      ? batchRef.current?.requestClose()
+                      : setEnqueueOpen(true)
+                  }
                 >
                   Create calling batch
                 </button>
                 <button
-                  className={button}
+                  className={`${button} ${teamOpen ? "bg-[var(--accent)] text-white" : ""}`}
+                  aria-expanded={teamOpen}
+                  aria-controls="sales-managers-panel"
+                  disabled={busy || loading}
                   onClick={() => setTeamOpen((v) => !v)}
                 >
                   Sales managers
@@ -237,8 +258,28 @@ export default function CallingWorkspace() {
             call is saved.
           </p>
           {teamOpen && admin && (
-            <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 space-y-3">
-              <h2 className="font-bold">Who can receive qualified leads?</h2>
+            <section
+              id="sales-managers-panel"
+              className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 space-y-3"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="font-bold">
+                    Who can receive qualified leads?
+                  </h2>
+                  <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                    Changes save automatically when you tick or untick a person.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className={button}
+                  disabled={busy}
+                  onClick={() => setTeamOpen(false)}
+                >
+                  Close ×
+                </button>
+              </div>
               {members.map((member) => (
                 <label key={member.user_id} className="flex gap-3 items-center">
                   <input
@@ -278,6 +319,8 @@ export default function CallingWorkspace() {
           )}
           {enqueueOpen && admin && (
             <CallingBatch
+              ref={batchRef}
+              onClose={() => setEnqueueOpen(false)}
               companies={companies}
               tasks={tasks}
               states={states}
@@ -296,7 +339,11 @@ export default function CallingWorkspace() {
             <>
               <p>
                 {visible.length}{" "}
-                {scope === "closed" ? "completed / closed calls" : "tasks"}
+                {scope === "closed"
+                  ? "completed / closed calls"
+                  : visible.length === 1
+                    ? "task"
+                    : "tasks"}
               </p>
               <div className="grid gap-3 lg:grid-cols-2">
                 {visible.slice(0, 200).map((task) => {
@@ -304,7 +351,10 @@ export default function CallingWorkspace() {
                   const mine = task.assigned_user_id === userId;
                   const owner =
                     members.find((m) => m.user_id === task.assigned_user_id)
-                      ?.display_name || (task.assigned_user_id ? "Inactive / former team member" : "Unassigned");
+                      ?.display_name ||
+                    (task.assigned_user_id
+                      ? "Inactive / former team member"
+                      : "Unassigned");
                   return (
                     <article
                       key={task.id}
@@ -457,6 +507,8 @@ export default function CallingWorkspace() {
 }
 
 function CallingBatch({
+  ref,
+  onClose,
   companies,
   tasks,
   states,
@@ -464,6 +516,8 @@ function CallingBatch({
   members,
   onSaved,
 }: {
+  ref?: Ref<{ requestClose: () => void }>;
+  onClose: () => void;
   companies: CallCompany[];
   tasks: CallTask[];
   states: Disposition[];
@@ -471,11 +525,33 @@ function CallingBatch({
   members: CallMember[];
   onSaved: (text: string) => Promise<void>;
 }) {
+  const formRef = useRef<HTMLFormElement>(null);
+  const [batch, setBatch] = useState("");
+  const [brief, setBrief] = useState("");
+  const [due, setDue] = useState(localDate());
+  const [assignee, setAssignee] = useState("");
+  const [screened, setScreened] = useState(false);
   const [search, setSearch] = useState("");
   const [ids, setIds] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const lock = useRef(false);
+  const { requestClose, confirmation } = useCloseGuard({
+    dirty: Boolean(
+      batch ||
+        brief ||
+        assignee ||
+        screened ||
+        ids.length ||
+        due !== localDate(),
+    ),
+    busy,
+    onClose,
+    onSave: () => formRef.current?.requestSubmit(),
+    saveDescription:
+      "Save and close creates the selected calling tasks. It does not save a draft batch.",
+  });
+  useImperativeHandle(ref, () => ({ requestClose }));
   const openIds = new Set(
     tasks.filter((t) => t.status === "open").map((t) => t.company_id),
   );
@@ -495,145 +571,195 @@ function CallingBatch({
     )
     .sort((a, b) => a.company_name.localeCompare(b.company_name));
   return (
-    <form
-      className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 space-y-4"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        if (lock.current) return;
-        lock.current = true;
-        setBusy(true);
-        setError("");
-        const f = new FormData(e.currentTarget);
-        try {
-          const result = await supabase.rpc("crm_call_enqueue", {
-            p_org: org,
-            p_companies: ids,
-            p_batch: String(f.get("batch")),
-            p_brief: String(f.get("brief")),
-            p_due: String(f.get("due")),
-            p_assignee: String(f.get("assignee")) || null,
-            p_screened: f.get("screened") === "on",
-          });
-          if (result.error) throw new Error(result.error.message);
-          await onSaved(
-            `${result.data.added} calling tasks created; ${result.data.skipped} skipped (already queued, closed, suppressed or missing a number).`,
-          );
-        } catch (err) {
-          setError(
-            err instanceof Error ? err.message : "Batch creation failed.",
-          );
-        } finally {
-          setBusy(false);
-          lock.current = false;
-        }
-      }}
-    >
-      <h2 className="font-bold text-lg">
-        Create a calling batch from CRM companies
-      </h2>
-      <p className="text-sm">
-        Research/import companies first, then select them here. No numbers have
-        been TPS/CTPS-screened by this feature. Closed and suppressed records
-        are excluded by the database.
-      </p>
-      {error && <p role="alert">{error}</p>}
-      <fieldset disabled={busy} className="grid gap-4 md:grid-cols-2">
-        <label>
-          Batch name
+    <>
+      <form
+        ref={formRef}
+        id="calling-batch-panel"
+        className="flex max-h-[80dvh] flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)]"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (lock.current) return;
+          if (!ids.length) {
+            setError("Select at least one company for the batch.");
+            return;
+          }
+          lock.current = true;
+          setBusy(true);
+          setError("");
+          const f = new FormData(e.currentTarget);
+          try {
+            const result = await supabase.rpc("crm_call_enqueue", {
+              p_org: org,
+              p_companies: ids,
+              p_batch: String(f.get("batch")),
+              p_brief: String(f.get("brief")),
+              p_due: String(f.get("due")),
+              p_assignee: String(f.get("assignee")) || null,
+              p_screened: f.get("screened") === "on",
+            });
+            if (result.error) throw new Error(result.error.message);
+            await onSaved(
+              `${result.data.added} calling tasks created; ${result.data.skipped} skipped (already queued, closed, suppressed or missing a number).`,
+            );
+          } catch (err) {
+            setError(
+              err instanceof Error ? err.message : "Batch creation failed.",
+            );
+          } finally {
+            setBusy(false);
+            lock.current = false;
+          }
+        }}
+      >
+        <header className="flex shrink-0 items-start justify-between gap-3 border-b border-[var(--border)] p-5">
+          <h2 className="font-bold text-lg">
+            Create a calling batch from CRM companies
+          </h2>
+          <button
+            type="button"
+            className={button}
+            disabled={busy}
+            onClick={requestClose}
+          >
+            Close ×
+          </button>
+        </header>
+        <div className="min-h-0 space-y-4 overflow-y-auto p-5">
+          <p className="text-sm">
+            Research/import companies first, then select them here. No numbers
+            have been TPS/CTPS-screened by this feature. Closed and suppressed
+            records are excluded by the database.
+          </p>
+          {error && <p role="alert">{error}</p>}
+          <fieldset disabled={busy} className="grid gap-4 md:grid-cols-2">
+            <label>
+              Batch name
+              <input
+                required
+                maxLength={160}
+                name="batch"
+                value={batch}
+                onChange={(e) => setBatch(e.target.value)}
+                className={field}
+                placeholder="Rail battery prospects — November"
+              />
+            </label>
+            <label>
+              First call due
+              <input
+                required
+                type="date"
+                name="due"
+                value={due}
+                onChange={(e) => setDue(e.target.value)}
+                className={field}
+              />
+            </label>
+            <label>
+              Assign to
+              <select
+                name="assignee"
+                className={field}
+                value={assignee}
+                onChange={(e) => setAssignee(e.target.value)}
+              >
+                <option value="">Team queue — unassigned</option>
+                {members.map((m) => (
+                  <option key={m.user_id} value={m.user_id}>
+                    {m.display_name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Calling brief
+              <textarea
+                name="brief"
+                value={brief}
+                onChange={(e) => setBrief(e.target.value)}
+                maxLength={4000}
+                className={field}
+                placeholder="Potential use, product and questions to ask"
+              />
+            </label>
+          </fieldset>
           <input
-            required
-            maxLength={160}
-            name="batch"
+            aria-label="Filter companies for batch"
             className={field}
-            placeholder="Rail battery prospects — November"
+            placeholder="Filter by company or industry"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            disabled={busy}
           />
-        </label>
-        <label>
-          First call due
-          <input
-            required
-            type="date"
-            name="due"
-            defaultValue={localDate()}
-            className={field}
-          />
-        </label>
-        <label>
-          Assign to
-          <select name="assignee" className={field}>
-            <option value="">Team queue — unassigned</option>
-            {members.map((m) => (
-              <option key={m.user_id} value={m.user_id}>
-                {m.display_name}
-              </option>
+          <button
+            type="button"
+            className={button}
+            disabled={busy}
+            onClick={() => setIds(eligible.slice(0, 500).map((c) => c.id))}
+          >
+            Select up to 500 filtered companies
+          </button>
+          <button
+            type="button"
+            className={`${button} ml-2`}
+            disabled={busy}
+            onClick={() => setIds([])}
+          >
+            Clear selection
+          </button>
+          <div className="max-h-60 overflow-auto space-y-2">
+            {eligible.slice(0, 500).map((c) => (
+              <label key={c.id} className="flex gap-3">
+                <input
+                  type="checkbox"
+                  checked={ids.includes(c.id)}
+                  disabled={busy}
+                  onChange={(e) =>
+                    setIds((old) =>
+                      e.target.checked
+                        ? [...old, c.id]
+                        : old.filter((id) => id !== c.id),
+                    )
+                  }
+                />
+                {c.company_name} · {c.phone || c.mobile}
+              </label>
             ))}
-          </select>
-        </label>
-        <label>
-          Calling brief
-          <textarea
-            name="brief"
-            maxLength={4000}
-            className={field}
-            placeholder="Potential use, product and questions to ask"
-          />
-        </label>
-      </fieldset>
-      <input
-        aria-label="Filter companies for batch"
-        className={field}
-        placeholder="Filter by company or industry"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        disabled={busy}
-      />
-      <button
-        type="button"
-        className={button}
-        disabled={busy}
-        onClick={() => setIds(eligible.slice(0, 500).map((c) => c.id))}
-      >
-        Select up to 500 filtered companies
-      </button>
-      <button
-        type="button"
-        className={`${button} ml-2`}
-        disabled={busy}
-        onClick={() => setIds([])}
-      >
-        Clear selection
-      </button>
-      <div className="max-h-60 overflow-auto space-y-2">
-        {eligible.slice(0, 500).map((c) => (
-          <label key={c.id} className="flex gap-3">
+          </div>
+          <label className="flex items-start gap-3">
             <input
               type="checkbox"
-              checked={ids.includes(c.id)}
+              name="screened"
+              required
               disabled={busy}
-              onChange={(e) =>
-                setIds((old) =>
-                  e.target.checked
-                    ? [...old, c.id]
-                    : old.filter((id) => id !== c.id),
-                )
-              }
+              checked={screened}
+              onChange={(e) => setScreened(e.target.checked)}
             />
-            {c.company_name} · {c.phone || c.mobile}
+            I have checked the selected numbers against TPS/CTPS and our
+            do-not-call records, or recorded specific consent where required.
           </label>
-        ))}
-      </div>
-      <label className="flex items-start gap-3">
-        <input type="checkbox" name="screened" required disabled={busy} />I have
-        checked the selected numbers against TPS/CTPS and our do-not-call
-        records, or recorded specific consent where required.
-      </label>
-      <button
-        className={`${button} bg-[var(--accent)] text-white`}
-        disabled={busy || !ids.length}
-      >
-        {busy ? "Creating tasks…" : `Create ${ids.length} calling tasks`}
-      </button>
-    </form>
+        </div>
+        <footer className="flex shrink-0 flex-wrap justify-end gap-3 border-t border-[var(--border)] p-5">
+          <button
+            type="button"
+            className={button}
+            disabled={busy}
+            onClick={requestClose}
+          >
+            Close
+          </button>
+          <button
+            className={`${button} bg-[var(--accent)] text-white`}
+            disabled={busy || !ids.length}
+          >
+            {busy
+              ? "Creating tasks…"
+              : `Create ${ids.length} calling task${ids.length === 1 ? "" : "s"}`}
+          </button>
+        </footer>
+      </form>
+      {confirmation}
+    </>
   );
 }
 
@@ -652,11 +778,13 @@ function CallDialog({
   onClose: () => void;
   onSaved: () => Promise<void>;
 }) {
-  const ref = useRef<HTMLDialogElement>(null);
+  const formId = useId();
   const lock = useRef(false);
   const [history, setHistory] = useState<CallEvent[]>([]);
   const [historyError, setHistoryError] = useState("");
   const [outcome, setOutcome] = useState<CallOutcome | "">("");
+  const [rating, setRating] = useState("");
+  const [manager, setManager] = useState("");
   const [notes, setNotes] = useState("");
   const [due, setDue] = useState("");
   const [busy, setBusy] = useState(false);
@@ -669,18 +797,6 @@ function CallDialog({
   const needsDate =
     ["callback", "send_information", "qualified"].includes(outcome) ||
     (["no_answer", "voicemail"].includes(outcome) && task.attempt_count < 2);
-  useEffect(() => {
-    ref.current?.showModal();
-    return () => ref.current?.close();
-  }, []);
-  useEffect(() => {
-    if (!notes && !outcome) return;
-    const warn = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-    };
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [notes, outcome]);
   useEffect(() => {
     let alive = true;
     void (async () => {
@@ -700,39 +816,30 @@ function CallDialog({
       alive = false;
     };
   }, [task.company_id, task.organisation_id]);
-  function close() {
-    if (busy) return;
-    if (
-      (notes || outcome) &&
-      !window.confirm("Discard these unsaved call notes?")
-    )
-      return;
-    ref.current?.close();
-    onClose();
-  }
   return (
-    <dialog
-      ref={ref}
-      aria-labelledby="call-title"
-      onCancel={(e) => {
-        e.preventDefault();
-        close();
-      }}
-      className="m-auto max-h-[90dvh] w-[min(900px,95vw)] overflow-auto rounded-2xl bg-[var(--surface)] p-6 text-[var(--text-primary)] backdrop:bg-black/60"
+    <Modal
+      title={company.company_name}
+      onClose={onClose}
+      busy={busy}
+      wide
+      dirty={writable && Boolean(notes || outcome || due || rating || manager)}
+      formId={writable ? formId : undefined}
+      saveDescription="Saving records the call outcome and creates any selected follow-up task."
+      footer={
+        writable ? (
+          <button
+            type="submit"
+            form={formId}
+            disabled={busy}
+            className={modalSaveButton}
+          >
+            {busy
+              ? "Saving call and next action…"
+              : "Save outcome and next action"}
+          </button>
+        ) : undefined
+      }
     >
-      <div className="flex justify-between gap-4">
-        <h2 id="call-title" className="text-2xl font-bold">
-          {company.company_name}
-        </h2>
-        <button
-          type="button"
-          className={button}
-          disabled={busy}
-          onClick={close}
-        >
-          Close
-        </button>
-      </div>
       <p className="my-2">
         {company.contact_name ||
           "Ask for the person responsible for site power / equipment"}{" "}
@@ -746,7 +853,13 @@ function CallDialog({
         {company.email && (
           <a href={`mailto:${company.email}`}>{company.email}</a>
         )}
-        <Link href={`/companies/${company.id}`}>Company profile</Link>
+        <Link
+          href={`/companies/${company.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Company profile
+        </Link>
       </div>
       <section className="rounded-xl bg-[var(--surface-muted)] p-4 space-y-2">
         <h3 className="font-bold">Calling brief</h3>
@@ -768,6 +881,7 @@ function CallDialog({
       )}
       {writable && (
         <form
+          id={formId}
           className="my-5 space-y-4"
           onSubmit={async (e) => {
             e.preventDefault();
@@ -838,6 +952,8 @@ function CallDialog({
               Lead rating
               <select
                 name="rating"
+                value={rating}
+                onChange={(e) => setRating(e.target.value)}
                 className={field}
                 required={[
                   "callback",
@@ -875,7 +991,13 @@ function CallDialog({
             {outcome === "qualified" && (
               <label className="block">
                 Sales manager
-                <select required name="manager" className={field}>
+                <select
+                  required
+                  name="manager"
+                  className={field}
+                  value={manager}
+                  onChange={(e) => setManager(e.target.value)}
+                >
                   <option value="">Select manager</option>
                   {members
                     .filter((m) => m.is_manager)
@@ -928,7 +1050,12 @@ function CallDialog({
               <p>
                 Record the opportunity reference and owner in your notes. Manage
                 the opportunity in the{" "}
-                <Link className="underline" href="/sales">
+                <Link
+                  className="underline"
+                  href="/sales"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   sales pipeline
                 </Link>
                 ; this action closes only the calling task.
@@ -942,11 +1069,6 @@ function CallDialog({
                 The company and history are retained.
               </p>
             )}
-            <button className={`${button} bg-[var(--accent)] text-white`}>
-              {busy
-                ? "Saving call and next action…"
-                : "Save outcome and next action"}
-            </button>
           </fieldset>
         </form>
       )}
@@ -981,6 +1103,6 @@ function CallDialog({
           </article>
         ))}
       </section>
-    </dialog>
+    </Modal>
   );
 }

@@ -1,6 +1,14 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  FormEvent,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useState,
+} from "react";
+import Modal, { modalSaveButton } from "@/components/ui/Modal";
 import { supabase } from "@/lib/supabase";
 
 type Contact = {
@@ -36,6 +44,7 @@ export default function ContactList({
   companyId: string | number;
   onContactCountChange?: (count: number) => void;
 }) {
+  const formId = useId();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -173,7 +182,8 @@ export default function ContactList({
     setModalOpen(false);
     setRefreshingPage(true);
 
-    window.location.reload();
+    await loadContacts();
+    setRefreshingPage(false);
   }
 
   async function deleteContact(contact: Contact) {
@@ -181,9 +191,7 @@ export default function ContactList({
       [contact.first_name, contact.last_name].filter(Boolean).join(" ") ||
       "this contact";
 
-    const confirmed = window.confirm(
-      `Delete ${name}? This cannot be undone.`,
-    );
+    const confirmed = window.confirm(`Delete ${name}? This cannot be undone.`);
 
     if (!confirmed) return;
 
@@ -212,7 +220,9 @@ export default function ContactList({
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-lg font-bold text-[var(--text-primary)]">Company contacts</h3>
+          <h3 className="text-lg font-bold text-[var(--text-primary)]">
+            Company contacts
+          </h3>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
             People associated with this company.
           </p>
@@ -361,38 +371,43 @@ export default function ContactList({
       ) : null}
 
       {modalOpen ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
-          onMouseDown={closeModal}
+        <Modal
+          title={editingContact ? "Edit contact" : "Add contact"}
+          description="Contact details for this company."
+          onClose={closeModal}
+          busy={saving}
+          formId={formId}
+          dirty={
+            JSON.stringify(form) !==
+            JSON.stringify(
+              editingContact
+                ? {
+                    firstName: editingContact.first_name || "",
+                    lastName: editingContact.last_name || "",
+                    jobTitle: editingContact.job_title || "",
+                    email: editingContact.email || "",
+                    phone: editingContact.phone || "",
+                  }
+                : emptyForm,
+            )
+          }
+          footer={
+            <button
+              type="submit"
+              form={formId}
+              disabled={saving}
+              className={modalSaveButton}
+            >
+              {saving
+                ? "Saving…"
+                : editingContact
+                  ? "Save changes"
+                  : "Save contact"}
+            </button>
+          }
         >
-          <div
-            className="w-full max-w-2xl rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xl"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h3 className="text-xl font-bold text-[var(--text-primary)]">
-                  {editingContact ? "Edit contact" : "Add contact"}
-                </h3>
-
-                <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                  {editingContact
-                    ? "Update this contact's information."
-                    : "Add a person associated with this company."}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={closeModal}
-                disabled={saving}
-                className="rounded-lg px-3 py-2 text-sm font-bold text-[var(--text-secondary)] hover:bg-[var(--surface-soft)] hover:text-[var(--text-primary)] disabled:opacity-50"
-              >
-                Close
-              </button>
-            </div>
-
-            <form onSubmit={saveContact} className="mt-6">
+          <form id={formId} onSubmit={saveContact}>
+            <fieldset disabled={saving}>
               <div className="grid gap-5 sm:grid-cols-2">
                 <FormField
                   label="First name"
@@ -445,32 +460,9 @@ export default function ContactList({
                   {saveError}
                 </div>
               ) : null}
-
-              <div className="mt-6 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  disabled={saving}
-                  className="rounded-xl border border-[var(--border)] px-5 py-3 text-sm font-bold text-[var(--text-primary)] hover:bg-[var(--surface-soft)] disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="rounded-xl bg-[var(--accent)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {saving
-                    ? "Saving..."
-                    : editingContact
-                      ? "Save changes →"
-                      : "Save contact →"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+            </fieldset>
+          </form>
+        </Modal>
       ) : null}
 
       {refreshingPage ? (
@@ -500,7 +492,9 @@ function ContactDetail({
         {label}
       </span>
 
-      <span className="text-sm font-medium text-[var(--text-primary)]">{value}</span>
+      <span className="text-sm font-medium text-[var(--text-primary)]">
+        {value}
+      </span>
     </div>
   );
 }
@@ -524,7 +518,9 @@ function FormField({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-bold text-[var(--text-primary)]">{label}</span>
+      <span className="text-sm font-bold text-[var(--text-primary)]">
+        {label}
+      </span>
 
       <input
         type={inputType}
