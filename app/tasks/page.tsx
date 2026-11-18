@@ -1,5 +1,5 @@
 import AppShell from "@/components/layout/AppShell";
-import GlobalTaskList from "@/components/tasks/GlobalTaskList";
+import CallingWorkspace from "@/components/tasks/CallingWorkspace";
 import PageHeader from "@/components/ui/PageHeader";
 
 export default function TasksPage() {
@@ -8,11 +8,11 @@ export default function TasksPage() {
       <PageHeader
         eyebrow="Workflow"
         title="Tasks"
-        subtitle="View outstanding actions, deadlines and completed work across all companies."
+        subtitle="Claim calls, record outcomes, schedule callbacks and follow up qualified leads."
       />
 
       <section className="p-6 lg:p-10">
-        <GlobalTaskList />
+        <CallingWorkspace />
       </section>
     </AppShell>
   );
